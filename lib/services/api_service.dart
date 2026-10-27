@@ -240,7 +240,14 @@ class ApiService {
     );
     return _parse(res);
   });
-
+  Future<Map<String, dynamic>> getOffer(String offerId) =>
+      _withRetry(() async {
+        final res = await http.get(
+          Uri.parse('${AppConfig.apiBaseUrl}/offers/$offerId'),
+          headers: _headers,
+        );
+        return _parse(res);
+      });
   Future<List<dynamic>> offers({String box = 'incoming'}) =>
       _withRetry(() async {
         final res = await http.get(

@@ -1,3 +1,5 @@
+import 'package:barter_ethio/providers/offers_provider.dart';
+import 'package:barter_ethio/screens/chats_screen.dart';
 import 'package:barter_ethio/screens/product_detail_screen.dart';
 import 'package:barter_ethio/widgets/image_gallery.dart';
 import 'package:barter_ethio/widgets/network_product_image.dart';
@@ -25,9 +27,41 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.white,
+      // appBar: AppBar(
+      //   title: const Text('Your matches'),
+      //   actions: [
+      //     IconButton(
+      //       icon: const Icon(Icons.refresh),
+      //       onPressed: () => ref.invalidate(matchesProvider),
+      //     ),
+      //     PopupMenuButton<String>(
+      //       onSelected: (v) async {
+      //         if (v == 'logout') {
+      //           await ref.read(authProvider.notifier).logout();
+      //           if (context.mounted) {
+      //             Navigator.of(context).pushAndRemoveUntil(
+      //               MaterialPageRoute(builder: (_) => const LoginScreen()),
+      //               (_) => false,
+      //             );
+      //           }
+      //         }
+      //       },
+      //       itemBuilder: (_) => const [
+      //         PopupMenuItem(value: 'logout', child: Text('Log out')),
+      //       ],
+      //     ),
+      //   ],
+      // ),
       appBar: AppBar(
         title: const Text('Your matches'),
         actions: [
+          // ── Chats button with pending badge ──
+          _ChatsIconButton(
+            onTap: () {
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (_) => const ChatsScreen()));
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(matchesProvider),
@@ -76,6 +110,58 @@ class HomeScreen extends ConsumerWidget {
             await ref.read(matchesProvider.future);
           },
         ),
+      ),
+    );
+  }
+}
+
+/// Chats icon with a badge showing the number of pending offers.
+class _ChatsIconButton extends ConsumerWidget {
+  final VoidCallback onTap;
+  const _ChatsIconButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Count pending from incoming + outgoing
+
+    final incoming = ref.watch(incomingOffersProvider).value ?? [];
+    final outgoing = ref.watch(outgoingOffersProvider).value ?? [];
+
+    int pending = 0;
+    for (final o in [...incoming, ...outgoing]) {
+      if (o is Map && o['status'] == 'PENDING') pending++;
+    }
+
+    return IconButton(
+      onPressed: onTap,
+      icon: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          const Icon(Icons.chat_bubble_outline),
+          if (pending > 0)
+            Positioned(
+              right: -6,
+              top: -4,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                constraints: const BoxConstraints(minWidth: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.error,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  pending > 9 ? '9+' : '$pending',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    height: 1.3,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
