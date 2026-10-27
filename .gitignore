@@ -1,4 +1,47 @@
-# Miscellaneous
+# ═══════════════════════════════════════════════════════
+#  FIREBASE SECRETS — NEVER COMMIT
+# ═══════════════════════════════════════════════════════
+
+# Firebase Android config (contains API keys)
+android/app/google-services.json
+
+# Firebase iOS config (contains API keys)
+ios/Runner/GoogleService-Info.plist
+
+# Firebase generated Dart config (contains all platform keys)
+lib/firebase_options.dart
+
+# Firebase Admin SDK service account (contains PRIVATE KEY)
+firebase-service-account*.json
+*-firebase-adminsdk-*.json
+
+# Firebase project config
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+
+# Firebase Cloud Messaging private keys
+**/.firebase/**/*.json
+
+# ═══════════════════════════════════════════════════════
+#  ENVIRONMENT / SECRETS
+# ═══════════════════════════════════════════════════════
+
+.env
+.env.*
+!.env.example
+
+# API keys, credentials
+secrets/
+*.secret
+*.pem
+*.key
+*.p12
+
+# ═══════════════════════════════════════════════════════
+#  MISCELLANEOUS
+# ═══════════════════════════════════════════════════════
+
 *.class
 *.log
 *.pyc
@@ -12,7 +55,10 @@
 .swiftpm/
 migrate_working_dir/
 
-# IntelliJ related
+# ═══════════════════════════════════════════════════════
+#  INTELLIJ / IDE
+# ═══════════════════════════════════════════════════════
+
 *.iml
 *.ipr
 *.iws
@@ -23,7 +69,10 @@ migrate_working_dir/
 # is commented out by default.
 #.vscode/
 
-# Flutter/Dart/Pub related
+# ═══════════════════════════════════════════════════════
+#  FLUTTER / DART
+# ═══════════════════════════════════════════════════════
+
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
@@ -32,17 +81,80 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+**/generated_plugin_registrant.dart
 
-# Symbolication related
+# ═══════════════════════════════════════════════════════
+#  SYMBOLICATION / OBFUSCATION
+# ═══════════════════════════════════════════════════════
+
 app.*.symbols
-
-# Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
+# ═══════════════════════════════════════════════════════
+#  ANDROID BUILD ARTIFACTS
+# ═══════════════════════════════════════════════════════
+
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/.gradle/
+/android/captures/
+/android/local.properties
+/android/key.properties
+*.jks
+*.keystore
+!debug.keystore
 
-# Widget Preview related
+# ═══════════════════════════════════════════════════════
+#  iOS BUILD ARTIFACTS
+# ═══════════════════════════════════════════════════════
+
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Runner.xcworkspace/xcuserdata/
+ios/Runner.xcodeproj/xcuserdata/
+*.xcuserstate
+
+# ═══════════════════════════════════════════════════════
+#  WEB BUILD ARTIFACTS
+# ═══════════════════════════════════════════════════════
+
+web/firebase-messaging-sw.js
+# Note: firebase-messaging-sw.js contains Firebase config — 
+#       generate it at build time or commit a template instead
+
+# ═══════════════════════════════════════════════════════
+#  WIDGET PREVIEW
+# ═══════════════════════════════════════════════════════
+
 .widget_preview/
+
+# ═══════════════════════════════════════════════════════
+#  TEMPORARY / BACKUP FILES
+# ═══════════════════════════════════════════════════════
+
+*.bak
+*.backup
+*.old
+*~
+*.tmp
+
+# ═══════════════════════════════════════════════════════
+#  OS FILES
+# ═══════════════════════════════════════════════════════
+
+Thumbs.db
+.DS_Store
+.LSOverride
+
+# ═══════════════════════════════════════════════════════
+#  TEST / COVERAGE
+# ═══════════════════════════════════════════════════════
+
+/coverage/
+test/.test_coverage.dart
+*.lcov
