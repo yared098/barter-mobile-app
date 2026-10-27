@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http_parser/http_parser.dart';
 
 import '../config.dart';
 
@@ -272,10 +273,12 @@ class ApiService {
     return _parse(res);
   });
 
-
   // ─────────────────────────── NOTIFICATIONS ───────────────────────────
 
-  Future<void> registerDeviceToken(String token, {required String platform}) async {
+  Future<void> registerDeviceToken(
+    String token, {
+    required String platform,
+  }) async {
     final res = await http.post(
       Uri.parse('${AppConfig.apiBaseUrl}/notifications/register'),
       headers: _headers,
@@ -295,25 +298,88 @@ class ApiService {
 
   // ─────────────────────────── UPLOAD ───────────────────────────
 
+  // Future<String> uploadImage(File file) async {
+  //   final req = http.MultipartRequest(
+  //     'POST',
+  //     Uri.parse('${AppConfig.apiBaseUrl}/upload'),
+  //   );
+  //   req.headers['Authorization'] = 'Bearer $_accessToken';
+  //   req.files.add(await http.MultipartFile.fromPath('file', file.path));
+
+  //   final streamed = await req.send();
+  //   final res = await http.Response.fromStream(streamed);
+  //   final data = jsonDecode(res.body);
+
+  //   if (res.statusCode >= 200 && res.statusCode < 300) {
+  //     return data['url'] as String;
+  //   }
+
+  //   throw ApiException(
+  //     data['message']?.toString() ?? 'Upload failed',
+  //     res.statusCode,
+  //   );
+  // }
+
+  // ─────────────────────────── UPLOAD ───────────────────────────
+
   Future<String> uploadImage(File file) async {
     final req = http.MultipartRequest(
       'POST',
       Uri.parse('${AppConfig.apiBaseUrl}/upload'),
     );
     req.headers['Authorization'] = 'Bearer $_accessToken';
-    req.files.add(await http.MultipartFile.fromPath('file', file.path));
+
+    // ⚠️ Explicit MIME — without this, Flutter sends octet-stream
+    final mimeType = _mimeTypeForPath(file.path);
+
+    req.files.add(
+      await http.MultipartFile.fromPath(
+        'file',
+        file.path,
+        contentType: mimeType,
+      ),
+    );
 
     final streamed = await req.send();
     final res = await http.Response.fromStream(streamed);
-    final data = jsonDecode(res.body);
+
+    // Handle empty body safely
+    final body = res.body.isEmpty ? '{}' : res.body;
+    final data = jsonDecode(body) as Map<String, dynamic>;
 
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      return data['url'] as String;
+      final url = data['url'];
+      if (url is String) return url;
+      throw ApiException(
+        'Upload succeeded but no URL returned',
+        res.statusCode,
+      );
     }
 
     throw ApiException(
-      data['message']?.toString() ?? 'Upload failed',
+      data['message']?.toString() ?? 'Upload failed (${res.statusCode})',
       res.statusCode,
     );
+  }
+
+  MediaType _mimeTypeForPath(String path) {
+    final ext = path.split('.').last.toLowerCase();
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg':
+        return MediaType('image', 'jpeg');
+      case 'png':
+        return MediaType('image', 'png');
+      case 'webp':
+        return MediaType('image', 'webp');
+      case 'gif':
+        return MediaType('image', 'gif');
+      case 'heic':
+        return MediaType('image', 'heic');
+      case 'heif':
+        return MediaType('image', 'heif');
+      default:
+        return MediaType('image', 'jpeg');
+    }
   }
 }

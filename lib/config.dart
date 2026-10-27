@@ -11,7 +11,7 @@ class AppConfig {
   // Production        → https://api.yourdomain.com/api/v1
   //
   // static const String apiBaseUrl = 'http://172.20.0.1:3000/api/v1';
-  static const String apiBaseUrl = 'http://192.168.1.32:3000/api/v1';
+  static const String apiBaseUrl = 'http://192.168.43.246:3000/api/v1';
   // ─────────────────────────────────────────────
   // App metadata
   // ─────────────────────────────────────────────

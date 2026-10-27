@@ -1,5 +1,8 @@
+import 'package:barter_ethio/widgets/image_gallery.dart';
+import 'package:barter_ethio/widgets/network_product_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../config.dart';
 import '../providers/auth_provider.dart';
 import '../providers/matches_provider.dart';
@@ -50,9 +53,9 @@ class HomeScreen extends ConsumerWidget {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
         onPressed: () async {
-          await Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const PostProductScreen()),
-          );
+          await Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const PostProductScreen()));
           ref.invalidate(matchesProvider);
           ref.invalidate(myProductsProvider);
         },
@@ -93,8 +96,7 @@ class _MatchesList extends StatelessWidget {
       return const EmptyView(
         icon: Icons.explore_outlined,
         title: 'No matches yet',
-        message:
-            'Post another product with more categories you want — matches appear here automatically.',
+        message: 'Post another product with more categories you want — matches appear here automatically.',
       );
     }
 
@@ -109,8 +111,10 @@ class _MatchesList extends StatelessWidget {
             child: Row(
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(20),
@@ -128,8 +132,7 @@ class _MatchesList extends StatelessWidget {
                 if (hidden > 0)
                   const Text(
                     'upgrade for more',
-                    style: TextStyle(
-                        fontSize: 12, color: AppColors.textMuted),
+                    style: TextStyle(fontSize: 12, color: AppColors.textMuted),
                   ),
               ],
             ),
@@ -149,10 +152,17 @@ class _MatchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = match['product'] as Map<String, dynamic>;
-    final images = (p['images'] as List?) ?? [];
-    final imageUrl = images.isNotEmpty
-        ? AppConfig.resolveImageUrl(images.first as String)
-        : null;
+
+    // Build absolute URLs for ALL images
+    final rawImages = (p['images'] as List?) ?? [];
+    final fullImageUrls = rawImages
+        .whereType<String>()
+        .where((s) => s.trim().isNotEmpty)
+        .map((s) => AppConfig.resolveImageUrl(s))
+        .where((s) => s.isNotEmpty)
+        .toList();
+
+    final firstImage = fullImageUrls.isNotEmpty ? fullImageUrls.first : null;
     final score = (match['score'] as num).toInt();
     final reasons = (match['reasons'] as List?)?.cast<String>() ?? [];
 
@@ -167,24 +177,19 @@ class _MatchCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              width: 88,
-              height: 88,
-              color: AppColors.primaryLight,
-              child: imageUrl != null
-                  ? Image.network(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(
-                        Icons.image_not_supported_outlined,
-                        color: AppColors.textMuted,
-                      ),
-                    )
-                  : const Icon(Icons.inventory_2_outlined,
-                      color: AppColors.primary, size: 32),
-            ),
+          // ── Tappable image → opens full gallery ──
+          NetworkProductImage(
+            url: firstImage,
+            width: 88,
+            height: 88,
+            radius: 12,
+            onTap: firstImage != null
+                ? () => showImageGallery(
+                    context,
+                    images: fullImageUrls,
+                    initialIndex: 0,
+                  )
+                : null,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -218,6 +223,39 @@ class _MatchCard extends StatelessWidget {
                     color: AppColors.textMuted,
                   ),
                 ),
+                // Show "+N more" badge if multiple images
+                if (fullImageUrls.length > 1) ...[
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.photo_library_outlined,
+                          size: 12,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${fullImageUrls.length} photos',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 if (reasons.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Wrap(
@@ -226,7 +264,9 @@ class _MatchCard extends StatelessWidget {
                     children: reasons.take(2).map((r) {
                       return Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primaryLight,
                           borderRadius: BorderRadius.circular(6),
