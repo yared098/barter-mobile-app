@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "746403727267",
+    "project_id": "barter-ethio",
+    "storage_bucket": "barter-ethio.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:746403727267:android:d3243438adc7f1aaae7c16",
+        "android_client_info": {
+          "package_name": "com.barterethio.barter_ethio"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "746403727267-h0v4hb5nra24ieq76jhp959v6kdms1fc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUEcAn4FHuODXmCFgxMvd5MUFaFouJiOs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "746403727267-h0v4hb5nra24ieq76jhp959v6kdms1fc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
