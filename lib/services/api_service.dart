@@ -194,7 +194,14 @@ class ApiService {
     );
     return _parseList(res);
   });
-
+  Future<Map<String, dynamic>> getProduct(String productId) =>
+      _withRetry(() async {
+        final res = await http.get(
+          Uri.parse('${AppConfig.apiBaseUrl}/products/$productId'),
+          headers: _headers,
+        );
+        return _parse(res);
+      });
   Future<Map<String, dynamic>> createProduct(Map<String, dynamic> payload) =>
       _withRetry(() async {
         final res = await http.post(
