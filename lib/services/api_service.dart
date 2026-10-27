@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:barter_ethio/services/google_auth_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http_parser/http_parser.dart';
@@ -173,6 +174,21 @@ class ApiService {
     _refreshToken = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+    // await GoogleAuthService().signOut();
+  }
+
+  Future<Map<String, dynamic>> loginWithGoogleCode(
+    String code,
+    String redirectUri,
+  ) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiBaseUrl}/auth/google-code'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'code': code, 'redirectUri': redirectUri}),
+    );
+    final data = _parse(res);
+    await _saveTokens(data['accessToken'], data['refreshToken']);
+    return data;
   }
 
   // ─────────────────────────── CATEGORIES ───────────────────────────
@@ -240,14 +256,13 @@ class ApiService {
     );
     return _parse(res);
   });
-  Future<Map<String, dynamic>> getOffer(String offerId) =>
-      _withRetry(() async {
-        final res = await http.get(
-          Uri.parse('${AppConfig.apiBaseUrl}/offers/$offerId'),
-          headers: _headers,
-        );
-        return _parse(res);
-      });
+  Future<Map<String, dynamic>> getOffer(String offerId) => _withRetry(() async {
+    final res = await http.get(
+      Uri.parse('${AppConfig.apiBaseUrl}/offers/$offerId'),
+      headers: _headers,
+    );
+    return _parse(res);
+  });
   Future<List<dynamic>> offers({String box = 'incoming'}) =>
       _withRetry(() async {
         final res = await http.get(

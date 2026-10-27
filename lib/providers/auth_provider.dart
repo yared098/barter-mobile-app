@@ -1,6 +1,7 @@
 import 'package:barter_ethio/providers/categories_provider.dart';
 import 'package:barter_ethio/providers/matches_provider.dart';
 import 'package:barter_ethio/providers/products_provider.dart';
+import 'package:barter_ethio/services/google_auth_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'api_provider.dart';
@@ -51,6 +52,7 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(status: AuthStatus.authenticated, user: user);
     } catch (_) {
       await api.logout();
+
       state = state.copyWith(
         status: AuthStatus.unauthenticated,
         clearUser: true,
@@ -69,6 +71,34 @@ class AuthNotifier extends Notifier<AuthState> {
         user: data['user'] as Map<String, dynamic>?,
       );
       // Refresh dependent providers with the new token
+      ref.invalidate(categoriesProvider);
+      ref.invalidate(myProductsProvider);
+      ref.invalidate(matchesProvider);
+      PushService().saveTokenForUser().catchError((_) {});
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        error: e.toString().replaceFirst('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> loginWithGoogle() async {
+    state = state.copyWith(clearError: true);
+    try {
+      // Get ID token via native SDK
+      final idToken = await GoogleAuthService().signInAndGetIdToken();
+      if (idToken == null) return false;
+
+      // Send to backend
+      final api = ref.read(apiProvider);
+      final data = await api.loginWithGoogle(idToken);
+
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        user: data['user'] as Map<String, dynamic>?,
+      );
       ref.invalidate(categoriesProvider);
       ref.invalidate(myProductsProvider);
       ref.invalidate(matchesProvider);

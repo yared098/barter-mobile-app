@@ -2,21 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/api_provider.dart';
 import '../providers/matches_provider.dart';
 import '../providers/offers_provider.dart';
 import '../theme.dart';
+import '../widgets/error_view.dart';
 import '../widgets/image_gallery.dart';
 import '../widgets/loading_view.dart';
-import '../widgets/error_view.dart';
 import '../widgets/send_offer_sheet.dart';
 
 /// Public product detail — fetched by id.
 final productDetailProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, String>((ref, id) async {
-      final api = ref.watch(apiProvider);
-      return api.getProduct(id);
-    });
+  final api = ref.watch(apiProvider);
+  return api.getProduct(id);
+});
 
 class ProductDetailScreen extends ConsumerWidget {
   final String productId;
@@ -32,15 +33,17 @@ class ProductDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = AppLocalizations.of(context)!;
     final async = ref.watch(productDetailProvider(productId));
 
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
-        title: const Text('Product'),
+        title: Text(t.productTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
+            tooltip: t.refresh,
             onPressed: () => ref.invalidate(productDetailProvider(productId)),
           ),
         ],
@@ -82,7 +85,7 @@ class _BodyState extends ConsumerState<_Body> {
     super.dispose();
   }
 
-  Future<void> _sendOffer() async {
+  Future<void> _sendOffer(AppLocalizations t) async {
     final sent = await showSendOfferSheet(
       context,
       targetProduct: widget.product,
@@ -93,16 +96,53 @@ class _BodyState extends ConsumerState<_Body> {
       ref.invalidate(outgoingOffersProvider);
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Offer sent! The owner will be notified.'),
+        SnackBar(
+          content: Text(t.offerSent),
           backgroundColor: AppColors.primary,
         ),
       );
     }
   }
 
+  String _conditionLabel(String? condition, AppLocalizations t) {
+    switch (condition) {
+      case 'NEW':
+        return t.conditionNew;
+      case 'LIKE_NEW':
+        return t.conditionLikeNew;
+      case 'GOOD':
+        return t.conditionGood;
+      case 'FAIR':
+        return t.conditionFair;
+      default:
+        return condition?.replaceAll('_', ' ') ?? '';
+    }
+  }
+
+  String _statusLabel(String status, AppLocalizations t) {
+    switch (status) {
+      case 'AVAILABLE':
+        return t.available;
+      case 'PENDING':
+        return t.pending;
+      case 'SWAPPED':
+        return t.swapped;
+      case 'ACCEPTED':
+        return t.accepted;
+      case 'COMPLETED':
+        return t.completed;
+      case 'DECLINED':
+        return t.declined;
+      case 'CANCELLED':
+        return t.cancelled;
+      default:
+        return status;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final p = widget.product;
     final images = ((p['images'] as List?) ?? [])
         .whereType<String>()
@@ -115,14 +155,14 @@ class _BodyState extends ConsumerState<_Body> {
     final category = p['category'] as Map<String, dynamic>?;
     final owner = p['owner'] as Map<String, dynamic>?;
     final wants = (p['wants'] as List?) ?? [];
+    final conditionLabel = _conditionLabel(p['condition'] as String?, t);
+    final statusLabel = _statusLabel(status, t);
 
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ═══════════════════════════════════════════════
-          //  IMAGE CAROUSEL — all photos, swipeable + tappable
-          // ═══════════════════════════════════════════════
+          // ── Image carousel ──
           _ImageCarousel(
             images: images,
             pageController: _pageController,
@@ -137,6 +177,7 @@ class _BodyState extends ConsumerState<_Body> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ── Match score badge ──
                 if (widget.matchScore != null) ...[
                   Row(
                     children: [
@@ -150,7 +191,7 @@ class _BodyState extends ConsumerState<_Body> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          '${widget.matchScore}% match',
+                          t.matchPercentBadge(widget.matchScore!),
                           style: const TextStyle(
                             color: AppColors.white,
                             fontSize: 12,
@@ -175,8 +216,10 @@ class _BodyState extends ConsumerState<_Body> {
                   ),
                   const SizedBox(height: 12),
                 ],
+
+                // ── Title ──
                 Text(
-                  p['title'] as String? ?? 'Untitled',
+                  p['title'] as String? ?? t.untitled,
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
@@ -185,6 +228,8 @@ class _BodyState extends ConsumerState<_Body> {
                   ),
                 ),
                 const SizedBox(height: 8),
+
+                // ── Price + condition + status ──
                 Row(
                   children: [
                     Text(
@@ -206,7 +251,7 @@ class _BodyState extends ConsumerState<_Body> {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        (p['condition'] as String? ?? '').replaceAll('_', ' '),
+                        conditionLabel,
                         style: const TextStyle(
                           fontSize: 11,
                           color: AppColors.primary,
@@ -226,7 +271,7 @@ class _BodyState extends ConsumerState<_Body> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          status,
+                          statusLabel,
                           style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.warning,
@@ -238,18 +283,25 @@ class _BodyState extends ConsumerState<_Body> {
                   ],
                 ),
                 const SizedBox(height: 20),
+
+                // ── Category ──
                 if (category != null) ...[
-                  _sectionTitle('Category'),
+                  _sectionTitle(t.categoryLabel),
                   Text(
                     '${category['icon'] ?? ''} ${category['name'] ?? ''}'
                         .trim(),
-                    style: const TextStyle(fontSize: 14, color: AppColors.text),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.text,
+                    ),
                   ),
                   const SizedBox(height: 16),
                 ],
-                _sectionTitle('Description'),
+
+                // ── Description ──
+                _sectionTitle(t.description),
                 Text(
-                  p['description'] as String? ?? 'No description',
+                  p['description'] as String? ?? t.noDescription,
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textMuted,
@@ -257,8 +309,10 @@ class _BodyState extends ConsumerState<_Body> {
                   ),
                 ),
                 const SizedBox(height: 20),
+
+                // ── Wants ──
                 if (wants.isNotEmpty) ...[
-                  _sectionTitle('Owner wants in exchange'),
+                  _sectionTitle(t.ownerWantsInExchange),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 6,
@@ -268,7 +322,7 @@ class _BodyState extends ConsumerState<_Body> {
                       final cat = wm['category'] as Map<String, dynamic>?;
                       final kw = wm['keywords'] as String?;
                       final label =
-                          '${cat?['icon'] ?? ''} ${cat?['name'] ?? 'Category'}'
+                          '${cat?['icon'] ?? ''} ${cat?['name'] ?? t.categoryFallback}'
                               .trim();
                       return Container(
                         padding: const EdgeInsets.symmetric(
@@ -292,7 +346,7 @@ class _BodyState extends ConsumerState<_Body> {
                             ),
                             if (kw != null && kw.isNotEmpty)
                               Text(
-                                'Looking for: $kw',
+                                t.lookingFor(kw),
                                 style: const TextStyle(
                                   fontSize: 10,
                                   color: AppColors.textMuted,
@@ -305,23 +359,29 @@ class _BodyState extends ConsumerState<_Body> {
                   ),
                   const SizedBox(height: 20),
                 ],
+
+                // ── Owner ──
                 if (owner != null) ...[
-                  _sectionTitle('Listed by'),
+                  _sectionTitle(t.listedBy),
                   Text(
-                    owner['name'] as String? ?? 'Someone',
-                    style: const TextStyle(fontSize: 14, color: AppColors.text),
+                    owner['name'] as String? ?? t.someone,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.text,
+                    ),
                   ),
                   const SizedBox(height: 24),
                 ],
-                // ── Send offer button ──
+
+                // ── Send offer ──
                 if (isAvailable) ...[
                   SizedBox(
                     width: double.infinity,
                     height: 54,
                     child: ElevatedButton.icon(
-                      onPressed: _sendOffer,
+                      onPressed: () => _sendOffer(t),
                       icon: const Icon(Icons.send, size: 18),
-                      label: const Text('Send offer'),
+                      label: Text(t.sendOffer),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: AppColors.white,
@@ -340,7 +400,7 @@ class _BodyState extends ConsumerState<_Body> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      'This product is $status — you can no longer send an offer.',
+                      t.productUnavailable(statusLabel),
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textMuted,
@@ -356,20 +416,23 @@ class _BodyState extends ConsumerState<_Body> {
   }
 
   Widget _sectionTitle(String text) => Padding(
-    padding: const EdgeInsets.only(bottom: 6),
-    child: Text(
-      text,
-      style: const TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-        color: AppColors.textMuted,
-        letterSpacing: 0.5,
-      ),
-    ),
-  );
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textMuted,
+            letterSpacing: 0.5,
+          ),
+        ),
+      );
 }
 
-/// Horizontal swipeable image carousel with dots + thumbnails strip.
+// ═══════════════════════════════════════════════════════
+//  Image carousel (unchanged — no UI strings)
+// ═══════════════════════════════════════════════════════
+
 class _ImageCarousel extends StatelessWidget {
   final List<String> images;
   final PageController pageController;
@@ -403,7 +466,6 @@ class _ImageCarousel extends StatelessWidget {
 
     return Column(
       children: [
-        // ── Main image PageView ──
         SizedBox(
           height: 320,
           child: Stack(
@@ -442,7 +504,6 @@ class _ImageCarousel extends StatelessWidget {
                   ),
                 ),
               ),
-              // Counter badge
               Positioned(
                 top: 12,
                 right: 12,
@@ -468,8 +529,6 @@ class _ImageCarousel extends StatelessWidget {
             ],
           ),
         ),
-
-        // ── Dots indicator ──
         if (images.length > 1)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -492,8 +551,6 @@ class _ImageCarousel extends StatelessWidget {
               ),
             ),
           ),
-
-        // ── Thumbnail strip (all images as a scrollable row) ──
         if (images.length > 1)
           Padding(
             padding: const EdgeInsets.only(top: 12, left: 16, right: 16),

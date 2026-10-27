@@ -1,0 +1,185 @@
+{
+  "@@locale": "en",
+
+  "appName": "Barter Ethio",
+  "@appName": { "description": "Application name" },
+
+  "tagline": "Trade what you have for what you want.",
+  "@tagline": { "description": "Slogan on login screen" },
+
+  "welcome": "Welcome to Barter",
+  "signInToContinue": "Sign in to continue bartering.",
+  "continueWithGoogle": "Continue with Google",
+  "orSignInWithEmail": "or sign in with email",
+  "orContinueWith": "or continue with",
+
+  "email": "Email",
+  "emailHint": "you@example.com",
+  "emailRequired": "Email is required",
+  "emailInvalid": "Enter a valid email",
+
+  "password": "Password",
+  "passwordHint": "Enter your password",
+  "passwordRequired": "Password is required",
+  "passwordMinLength": "Min 6 characters",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+
+  "signIn": "Sign in",
+  "signOut": "Log out",
+
+  "facebook": "Facebook",
+  "apple": "Apple",
+  "phone": "Phone",
+  "comingSoon": "{provider} login is coming soon",
+  "@comingSoon": {
+    "description": "Shown when tapping a not-yet-implemented login option",
+    "placeholders": { "provider": { "type": "String" } }
+  },
+
+  "testAccounts": "Test accounts (password: password123)",
+  "loginFailed": "Login failed",
+  "invalidCredentials": "Invalid credentials",
+
+  "homeTitle": "Your matches",
+  "noMatchesYet": "No matches yet",
+  "noMatchesMessage": "Post another product with more categories you want — matches appear here automatically.",
+  "findingMatches": "Finding matches...",
+  "refresh": "Refresh",
+  "upgradeForMore": "upgrade for more",
+
+  "matchesCount": "{count, plural, =0{No matches} =1{1 match} other{{count} matches}}",
+  "@matchesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "chats": "Chats",
+  "noChatsYet": "No conversations yet",
+  "noChatsMessage": "Send an offer from a match to start a conversation. All your active barter negotiations appear here.",
+  "noMessagesYet": "No messages yet",
+  "sayHi": "Say hi and arrange the details.",
+  "writeMessage": "Write a message...",
+  "send": "Send",
+
+  "postProduct": "Post product",
+  "postYourFirstProduct": "Post your first product",
+  "postProductTitle": "Post a product",
+  "title": "Title",
+  "titleHint": "iPhone 15 Pro",
+  "titleMinLength": "Min 3 characters",
+  "description": "Description",
+  "descriptionHint": "Condition, age, extras...",
+  "descriptionMinLength": "Min 10 characters",
+  "condition": "Condition",
+  "conditionNew": "New",
+  "conditionLikeNew": "Like new",
+  "conditionGood": "Good",
+  "conditionFair": "Fair",
+  "estimatedValue": "Estimated value (ETB)",
+  "estimatedValueHint": "12000",
+  "invalidNumber": "Enter a number",
+  "categoryPrompt": "What category is your item?",
+  "wantedPrompt": "What do you want in exchange?",
+  "selectCategory": "Select category",
+  "selectCategoryError": "Select what category your item is",
+  "selectWantedError": "Pick at least one category you want",
+  "addPhoto": "Add a photo",
+
+  "offer": "Offer",
+  "sendOffer": "Send offer",
+  "acceptOffer": "Accept",
+  "declineOffer": "Decline",
+  "cancelOffer": "Cancel offer",
+  "completeSwap": "Mark as completed",
+  "offerAccepted": "Offer accepted",
+  "offerDeclined": "Offer declined",
+  "offerCancelled": "Offer cancelled",
+  "swapCompleted": "Swap completed",
+  "offerSent": "Offer sent! The owner will be notified.",
+  "youGive": "You give",
+  "youGet": "You get",
+  "barterDeal": "Barter deal",
+  "aboutProduct": "About: {title}",
+  "@aboutProduct": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "fromPerson": "From {name}",
+  "@fromPerson": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "pending": "Pending",
+  "accepted": "Accepted",
+  "completed": "Completed",
+  "declined": "Declined",
+  "cancelled": "Cancelled",
+  "available": "Available",
+  "swapped": "Swapped",
+
+  "errorGeneric": "Something went wrong",
+  "tryAgain": "Try again",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "gotIt": "Got it",
+  "back": "Back",
+  "done": "Done",
+
+  "language": "Language",
+  "english": "English",
+  "amharic": "አማርኛ",
+    "declineOfferConfirmTitle": "Decline offer?",
+  "declineOfferConfirmMessage": "The offer will be closed and both products unlocked.",
+  "acceptOfferConfirmTitle": "Accept offer?",
+  "acceptOfferConfirmMessage": "Ownership of both products will transfer immediately. Meet the other person to physically exchange items.",
+  "cancelOfferConfirmTitle": "Cancel offer?",
+  "cancelOfferConfirmMessage": "The offer will be withdrawn. Both products unlock.",
+  "completeSwapConfirmTitle": "Mark swap complete?",
+  "completeSwapConfirmMessage": "Only do this after you have physically exchanged items.",
+
+  "chatClosedCompleted": "Swap completed — chat is closed.",
+  "chatClosedOther": "This offer is {status}. Chat is closed.",
+  "@chatClosedOther": {
+    "placeholders": { "status": { "type": "String" } }
+  },
+
+  "someone": "Someone",
+  "product": "Product",
+  "loadingConversations": "Loading conversations...",
+  "sender": "Sender",
+  "receiver": "Receiver",
+  "newOffer": "New offer",
+  "attachment": "📎 Message",
+
+  "timeNow": "now",
+  "timeMinutes": "{count}m",
+  "@timeMinutes": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "timeHours": "{count}h",
+  "@timeHours": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "timeDays": "{count}d",
+  "@timeDays": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+    "productTitle": "Product",
+  "matchPercentBadge": "{score}% match",
+  "@matchPercentBadge": {
+    "placeholders": { "score": { "type": "int" } }
+  },
+  "untitled": "Untitled",
+  "categoryLabel": "Category",
+  "noDescription": "No description",
+  "ownerWantsInExchange": "Owner wants in exchange",
+  "lookingFor": "Looking for: {kw}",
+  "@lookingFor": {
+    "placeholders": { "kw": { "type": "String" } }
+  },
+  "listedBy": "Listed by",
+  "productUnavailable": "This product is {status} — you can no longer send an offer.",
+  "@productUnavailable": {
+    "placeholders": { "status": { "type": "String" } }
+  },
+  "categoryFallback": "Category"
+}

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/api_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/matches_provider.dart';
@@ -52,13 +53,14 @@ class _PostProductScreenState extends ConsumerState<PostProductScreen> {
   }
 
   Future<void> _submit() async {
+    final t = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
     if (_haveCategoryId == null) {
-      setState(() => _error = 'Select what category your item is');
+      setState(() => _error = t.selectCategoryError);
       return;
     }
     if (_wantCategoryIds.isEmpty) {
-      setState(() => _error = 'Pick at least one category you want');
+      setState(() => _error = t.selectWantedError);
       return;
     }
 
@@ -104,13 +106,16 @@ class _PostProductScreenState extends ConsumerState<PostProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final categoriesAsync = ref.watch(categoriesProvider);
 
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
         title: Text(
-          widget.isFirstProduct ? 'Post your first product' : 'Post a product',
+          widget.isFirstProduct
+              ? t.postYourFirstProduct
+              : t.postProductTitle,
         ),
         actions: [
           if (!widget.isFirstProduct)
@@ -131,24 +136,24 @@ class _PostProductScreenState extends ConsumerState<PostProductScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Failed to load categories\n$e',
+                  '${t.errorGeneric}\n$e',
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () => ref.invalidate(categoriesProvider),
-                  child: const Text('Retry'),
+                  child: Text(t.tryAgain),
                 ),
               ],
             ),
           ),
         ),
-        data: (categories) => _buildForm(categories),
+        data: (categories) => _buildForm(categories, t),
       ),
     );
   }
 
-  Widget _buildForm(List<dynamic> categories) {
+  Widget _buildForm(List<dynamic> categories, AppLocalizations t) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Form(
@@ -156,6 +161,7 @@ class _PostProductScreenState extends ConsumerState<PostProductScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // ── Image picker ──
             GestureDetector(
               onTap: _pickImage,
               child: Container(
@@ -172,18 +178,18 @@ class _PostProductScreenState extends ConsumerState<PostProductScreen> {
                       : null,
                 ),
                 child: _image == null
-                    ? const Column(
+                    ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.add_photo_alternate_outlined,
                             size: 48,
                             color: AppColors.primary,
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           Text(
-                            'Add a photo',
-                            style: TextStyle(
+                            t.addPhoto,
+                            style: const TextStyle(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w600,
                             ),
@@ -194,54 +200,65 @@ class _PostProductScreenState extends ConsumerState<PostProductScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            _label('Title'),
+
+            // ── Title ──
+            _label(t.title),
             TextFormField(
               controller: _titleCtrl,
               validator: (v) =>
-                  (v ?? '').trim().length < 3 ? 'Min 3 characters' : null,
-              decoration: const InputDecoration(hintText: 'iPhone 15 Pro'),
+                  (v ?? '').trim().length < 3 ? t.titleMinLength : null,
+              decoration: InputDecoration(hintText: t.titleHint),
             ),
             const SizedBox(height: 16),
-            _label('Description'),
+
+            // ── Description ──
+            _label(t.description),
             TextFormField(
               controller: _descCtrl,
               maxLines: 3,
               validator: (v) =>
-                  (v ?? '').trim().length < 10 ? 'Min 10 characters' : null,
-              decoration: const InputDecoration(
-                hintText: 'Condition, age, extras...',
-              ),
+                  (v ?? '').trim().length < 10 ? t.descriptionMinLength : null,
+              decoration: InputDecoration(hintText: t.descriptionHint),
             ),
             const SizedBox(height: 16),
-            _label('Condition'),
+
+            // ── Condition ──
+            _label(t.condition),
             DropdownButtonFormField<String>(
               value: _condition,
               decoration: const InputDecoration(),
-              items: const [
-                DropdownMenuItem(value: 'NEW', child: Text('New')),
-                DropdownMenuItem(value: 'LIKE_NEW', child: Text('Like new')),
-                DropdownMenuItem(value: 'GOOD', child: Text('Good')),
-                DropdownMenuItem(value: 'FAIR', child: Text('Fair')),
+              items: [
+                DropdownMenuItem(value: 'NEW', child: Text(t.conditionNew)),
+                DropdownMenuItem(
+                  value: 'LIKE_NEW',
+                  child: Text(t.conditionLikeNew),
+                ),
+                DropdownMenuItem(value: 'GOOD', child: Text(t.conditionGood)),
+                DropdownMenuItem(value: 'FAIR', child: Text(t.conditionFair)),
               ],
               onChanged: (v) => setState(() => _condition = v ?? 'GOOD'),
             ),
             const SizedBox(height: 16),
-            _label('Estimated value (ETB)'),
+
+            // ── Estimated value ──
+            _label(t.estimatedValue),
             TextFormField(
               controller: _valueCtrl,
               keyboardType: TextInputType.number,
               validator: (v) {
                 final n = double.tryParse((v ?? '').trim());
-                if (n == null || n <= 0) return 'Enter a number';
+                if (n == null || n <= 0) return t.invalidNumber;
                 return null;
               },
-              decoration: const InputDecoration(hintText: '12000'),
+              decoration: InputDecoration(hintText: t.estimatedValueHint),
             ),
             const SizedBox(height: 24),
-            _label('What category is your item?'),
+
+            // ── Have category ──
+            _label(t.categoryPrompt),
             DropdownButtonFormField<String>(
               value: _haveCategoryId,
-              decoration: const InputDecoration(hintText: 'Select'),
+              decoration: InputDecoration(hintText: t.selectCategory),
               items: categories
                   .map(
                     (c) => DropdownMenuItem<String>(
@@ -253,7 +270,9 @@ class _PostProductScreenState extends ConsumerState<PostProductScreen> {
               onChanged: (v) => setState(() => _haveCategoryId = v),
             ),
             const SizedBox(height: 24),
-            _label('What do you want in exchange?'),
+
+            // ── Want categories ──
+            _label(t.wantedPrompt),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -285,16 +304,22 @@ class _PostProductScreenState extends ConsumerState<PostProductScreen> {
                 );
               }).toList(),
             ),
+
+            // ── Error ──
             if (_error != null) ...[
               const SizedBox(height: 16),
               Text(
                 _error!,
-                style: const TextStyle(color: Color(0xFFB00020), fontSize: 13),
+                style: const TextStyle(
+                  color: AppColors.error,
+                  fontSize: 13,
+                ),
               ),
             ],
+
             const SizedBox(height: 32),
             PrimaryButton(
-              label: 'Post product',
+              label: t.postProduct,
               onPressed: _submit,
               loading: _loading,
             ),
@@ -306,14 +331,14 @@ class _PostProductScreenState extends ConsumerState<PostProductScreen> {
   }
 
   Widget _label(String text) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
-    child: Text(
-      text,
-      style: const TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: AppColors.text,
-      ),
-    ),
-  );
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppColors.text,
+          ),
+        ),
+      );
 }

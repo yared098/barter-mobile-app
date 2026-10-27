@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import '../providers/offers_provider.dart';
 import '../theme.dart';
@@ -15,16 +16,18 @@ class ChatsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = AppLocalizations.of(context)!;
     final chatsAsync = ref.watch(allChatsProvider);
     final currentUserId = ref.watch(authProvider).user?['id'] as String?;
 
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
-        title: const Text('Chats'),
+        title: Text(t.chats),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
+            tooltip: t.refresh,
             onPressed: () {
               ref.invalidate(incomingOffersProvider);
               ref.invalidate(outgoingOffersProvider);
@@ -33,7 +36,9 @@ class ChatsScreen extends ConsumerWidget {
         ],
       ),
       body: chatsAsync.when(
-        loading: () => const LoadingView(message: 'Loading conversations...'),
+        // Keep old data visible during refresh
+        skipLoadingOnRefresh: true,
+        loading: () => LoadingView(message: t.loadingConversations),
         error: (e, _) => ErrorView(
           message: e.toString().replaceFirst('Exception: ', ''),
           onRetry: () {
@@ -43,12 +48,10 @@ class ChatsScreen extends ConsumerWidget {
         ),
         data: (chats) {
           if (chats.isEmpty) {
-            return const EmptyView(
+            return EmptyView(
               icon: Icons.chat_bubble_outline,
-              title: 'No conversations yet',
-              message:
-                  'Send an offer from a match to start a conversation. '
-                  'All your active barter negotiations appear here.',
+              title: t.noChatsYet,
+              message: t.noChatsMessage,
             );
           }
 
@@ -57,9 +60,10 @@ class ChatsScreen extends ConsumerWidget {
             onRefresh: () async {
               ref.invalidate(incomingOffersProvider);
               ref.invalidate(outgoingOffersProvider);
-              await ref.read(allChatsProvider.future);
+              await ref.refresh(allChatsProvider.future);
             },
             child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(vertical: 8),
               itemCount: chats.length,
               separatorBuilder: (_, __) => const Divider(
@@ -87,30 +91,27 @@ class _ChatRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final direction = offer['_direction'] as String? ?? 'incoming';
     final isIncoming = direction == 'incoming';
 
-    // The "other" person
     final other = isIncoming ? offer['sender'] : offer['receiver'];
     final otherName = (other is Map ? other['name'] : null) as String? ??
-        (isIncoming ? 'Sender' : 'Receiver');
+        (isIncoming ? t.sender : t.receiver);
 
-    // The "their" product (what I'd receive if accepted)
     final theirProduct =
         isIncoming ? offer['offeredProduct'] : offer['requestedProduct'];
     final theirTitle =
         (theirProduct is Map ? theirProduct['title'] : null) as String? ??
-            'Product';
-    final theirImages = (theirProduct is Map ? theirProduct['images'] : null)
-            as List? ??
-        [];
+            t.product;
+    final theirImages =
+        (theirProduct is Map ? theirProduct['images'] : null) as List? ?? [];
     final theirFirstImage = theirImages.isNotEmpty ? theirImages.first : null;
-    final imageUrl = theirFirstImage is String &&
-            theirFirstImage.trim().isNotEmpty
-        ? AppConfig.resolveImageUrl(theirFirstImage)
-        : null;
+    final imageUrl =
+        theirFirstImage is String && theirFirstImage.trim().isNotEmpty
+            ? AppConfig.resolveImageUrl(theirFirstImage)
+            : null;
 
-    // Last message preview
     final messages = (offer['messages'] as List?) ?? [];
     String preview;
     DateTime? lastTime;
@@ -118,20 +119,20 @@ class _ChatRow extends StatelessWidget {
     if (messages.isNotEmpty) {
       final last = messages.last as Map<String, dynamic>;
       preview = (last['content'] as String? ?? '').trim();
-      if (preview.isEmpty) preview = '📎 Message';
-      final t = last['createdAt'];
-      if (t is String) {
+      if (preview.isEmpty) preview = t.attachment;
+      final raw = last['createdAt'];
+      if (raw is String) {
         try {
-          lastTime = DateTime.parse(t);
+          lastTime = DateTime.parse(raw);
         } catch (_) {}
       }
     } else {
       final msg = (offer['message'] as String? ?? '').trim();
-      preview = msg.isEmpty ? 'New offer' : msg;
-      final t = offer['createdAt'];
-      if (t is String) {
+      preview = msg.isEmpty ? t.newOffer : msg;
+      final raw = offer['createdAt'];
+      if (raw is String) {
         try {
-          lastTime = DateTime.parse(t);
+          lastTime = DateTime.parse(raw);
         } catch (_) {}
       }
     }
@@ -155,7 +156,6 @@ class _ChatRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Product image ──
             Stack(
               children: [
                 ClipRRect(
@@ -181,7 +181,6 @@ class _ChatRow extends StatelessWidget {
                           ),
                   ),
                 ),
-                // Direction indicator
                 Positioned(
                   bottom: -2,
                   right: -2,
@@ -207,8 +206,6 @@ class _ChatRow extends StatelessWidget {
               ],
             ),
             const SizedBox(width: 12),
-
-            // ── Text column ──
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,7 +226,7 @@ class _ChatRow extends StatelessWidget {
                       ),
                       if (lastTime != null)
                         Text(
-                          _formatTime(lastTime),
+                          _formatTime(lastTime, t),
                           style: TextStyle(
                             fontSize: 11,
                             color: status == 'PENDING'
@@ -244,7 +241,7 @@ class _ChatRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'About: $theirTitle',
+                    t.aboutProduct(theirTitle),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -266,7 +263,7 @@ class _ChatRow extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  _StatusPill(status: status),
+                  _StatusPill(status: status, t: t),
                 ],
               ),
             ),
@@ -276,20 +273,22 @@ class _ChatRow extends StatelessWidget {
     );
   }
 
-  String _formatTime(DateTime dt) {
+  String _formatTime(DateTime dt, AppLocalizations t) {
     final now = DateTime.now();
     final diff = now.difference(dt);
-    if (diff.inSeconds < 60) return 'now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m';
-    if (diff.inHours < 24) return '${diff.inHours}h';
-    if (diff.inDays < 7) return '${diff.inDays}d';
+    if (diff.inSeconds < 60) return t.timeNow;
+    if (diff.inMinutes < 60) return t.timeMinutes(diff.inMinutes);
+    if (diff.inHours < 24) return t.timeHours(diff.inHours);
+    if (diff.inDays < 7) return t.timeDays(diff.inDays);
     return '${dt.day}/${dt.month}';
   }
 }
 
 class _StatusPill extends StatelessWidget {
   final String status;
-  const _StatusPill({required this.status});
+  final AppLocalizations t;
+
+  const _StatusPill({required this.status, required this.t});
 
   @override
   Widget build(BuildContext context) {
@@ -299,23 +298,23 @@ class _StatusPill extends StatelessWidget {
     switch (status) {
       case 'PENDING':
         color = AppColors.primary;
-        label = 'Pending';
+        label = t.pending;
         break;
       case 'ACCEPTED':
         color = const Color(0xFF2E7D32);
-        label = 'Accepted';
+        label = t.accepted;
         break;
       case 'COMPLETED':
         color = const Color(0xFF2E7D32);
-        label = 'Completed';
+        label = t.completed;
         break;
       case 'DECLINED':
         color = AppColors.error;
-        label = 'Declined';
+        label = t.declined;
         break;
       case 'CANCELLED':
         color = AppColors.textMuted;
-        label = 'Cancelled';
+        label = t.cancelled;
         break;
       default:
         color = AppColors.textMuted;

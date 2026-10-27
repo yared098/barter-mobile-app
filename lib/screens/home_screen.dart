@@ -1,3 +1,4 @@
+import 'package:barter_ethio/l10n/app_localizations.dart';
 import 'package:barter_ethio/providers/offers_provider.dart';
 import 'package:barter_ethio/screens/chats_screen.dart';
 import 'package:barter_ethio/screens/product_detail_screen.dart';
@@ -23,48 +24,30 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = AppLocalizations.of(context)!;
     final matchesAsync = ref.watch(matchesProvider);
 
     return Scaffold(
       backgroundColor: AppColors.white,
-      // appBar: AppBar(
-      //   title: const Text('Your matches'),
-      //   actions: [
-      //     IconButton(
-      //       icon: const Icon(Icons.refresh),
-      //       onPressed: () => ref.invalidate(matchesProvider),
-      //     ),
-      //     PopupMenuButton<String>(
-      //       onSelected: (v) async {
-      //         if (v == 'logout') {
-      //           await ref.read(authProvider.notifier).logout();
-      //           if (context.mounted) {
-      //             Navigator.of(context).pushAndRemoveUntil(
-      //               MaterialPageRoute(builder: (_) => const LoginScreen()),
-      //               (_) => false,
-      //             );
-      //           }
-      //         }
-      //       },
-      //       itemBuilder: (_) => const [
-      //         PopupMenuItem(value: 'logout', child: Text('Log out')),
-      //       ],
-      //     ),
-      //   ],
-      // ),
       appBar: AppBar(
-        title: const Text('Your matches'),
+        title: Text(t.homeTitle),
         actions: [
-          // ── Chats button with pending badge ──
           _ChatsIconButton(
+            tooltip: t.chats,
             onTap: () {
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (_) => const ChatsScreen()));
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ChatsScreen()),
+              );
             },
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => ref.invalidate(matchesProvider),
+            tooltip: t.refresh,
+            onPressed: () {
+              ref.invalidate(incomingOffersProvider);
+              ref.invalidate(outgoingOffersProvider);
+              ref.refresh(matchesProvider.future);
+            },
           ),
           PopupMenuButton<String>(
             onSelected: (v) async {
@@ -78,8 +61,8 @@ class HomeScreen extends ConsumerWidget {
                 }
               }
             },
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'logout', child: Text('Log out')),
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'logout', child: Text(t.signOut)),
             ],
           ),
         ],
@@ -88,17 +71,20 @@ class HomeScreen extends ConsumerWidget {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
         onPressed: () async {
-          await Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (_) => const PostProductScreen()));
+          await Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const PostProductScreen()),
+          );
           ref.invalidate(matchesProvider);
           ref.invalidate(myProductsProvider);
         },
         icon: const Icon(Icons.add),
-        label: const Text('Post product'),
+        label: Text(t.postProduct),
       ),
       body: matchesAsync.when(
-        loading: () => const LoadingView(message: 'Finding matches...'),
+        // 🔑 THE FIX — keep old data visible during refresh so the
+        // RefreshIndicator can animate smoothly without a loading flash.
+        skipLoadingOnRefresh: true,
+        loading: () => LoadingView(message: t.findingMatches),
         error: (e, _) => ErrorView(
           message: e.toString().replaceFirst('Exception: ', ''),
           onRetry: () => ref.invalidate(matchesProvider),
@@ -106,8 +92,9 @@ class HomeScreen extends ConsumerWidget {
         data: (data) => _MatchesList(
           data: data,
           onRefresh: () async {
-            ref.invalidate(matchesProvider);
-            await ref.read(matchesProvider.future);
+            ref.invalidate(incomingOffersProvider);
+            ref.invalidate(outgoingOffersProvider);
+            await ref.refresh(matchesProvider.future);
           },
         ),
       ),
@@ -118,12 +105,11 @@ class HomeScreen extends ConsumerWidget {
 /// Chats icon with a badge showing the number of pending offers.
 class _ChatsIconButton extends ConsumerWidget {
   final VoidCallback onTap;
-  const _ChatsIconButton({required this.onTap});
+  final String? tooltip;
+  const _ChatsIconButton({required this.onTap, this.tooltip});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Count pending from incoming + outgoing
-
     final incoming = ref.watch(incomingOffersProvider).value ?? [];
     final outgoing = ref.watch(outgoingOffersProvider).value ?? [];
 
@@ -134,6 +120,7 @@ class _ChatsIconButton extends ConsumerWidget {
 
     return IconButton(
       onPressed: onTap,
+      tooltip: tooltip,
       icon: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -175,15 +162,16 @@ class _MatchesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final matches = (data['matches'] as List?) ?? [];
     final total = data['totalCount'] ?? 0;
     final hidden = data['hiddenCount'] ?? 0;
 
     if (matches.isEmpty) {
-      return const EmptyView(
+      return EmptyView(
         icon: Icons.explore_outlined,
-        title: 'No matches yet',
-        message: 'Post another product with more categories you want — matches appear here automatically.',
+        title: t.noMatchesYet,
+        message: t.noMatchesMessage,
       );
     }
 
@@ -191,6 +179,8 @@ class _MatchesList extends StatelessWidget {
       color: AppColors.primary,
       onRefresh: onRefresh,
       child: ListView(
+        // Always scrollable so pull-to-refresh works even with 1 item
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
         children: [
           Padding(
@@ -207,7 +197,7 @@ class _MatchesList extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '$total match${total == 1 ? '' : 'es'}',
+                    t.matchesCount(total),
                     style: const TextStyle(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w600,
@@ -217,9 +207,12 @@ class _MatchesList extends StatelessWidget {
                 ),
                 const Spacer(),
                 if (hidden > 0)
-                  const Text(
-                    'upgrade for more',
-                    style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                  Text(
+                    t.upgradeForMore,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textMuted,
+                    ),
                   ),
               ],
             ),
@@ -238,6 +231,7 @@ class _MatchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final p = match['product'] as Map<String, dynamic>;
 
     // Build absolute URLs for ALL images
@@ -253,8 +247,10 @@ class _MatchCard extends StatelessWidget {
     final score = (match['score'] as num).toInt();
     final reasons = (match['reasons'] as List?)?.cast<String>() ?? [];
 
+    // Localized condition label
+    final conditionLabel = _conditionLabel(p['condition'] as String?, t);
+
     return GestureDetector(
-      // ── Tapping anywhere on the card (except the image) opens Product Detail ──
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -278,16 +274,14 @@ class _MatchCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Image has its OWN tap handler → opens gallery ──
-            // GestureDetector on the image absorbs the tap so the parent
-            // onTap (open detail) doesn't fire when the image is tapped.
+            // ── Image (own tap → gallery) ──
             GestureDetector(
               onTap: firstImage != null
                   ? () => showImageGallery(
-                      context,
-                      images: fullImageUrls,
-                      initialIndex: 0,
-                    )
+                        context,
+                        images: fullImageUrls,
+                        initialIndex: 0,
+                      )
                   : null,
               behavior: HitTestBehavior.opaque,
               child: Stack(
@@ -298,7 +292,6 @@ class _MatchCard extends StatelessWidget {
                     height: 88,
                     radius: 12,
                   ),
-                  // "+N" badge overlay on image
                   if (fullImageUrls.length > 1)
                     Positioned(
                       bottom: 4,
@@ -345,7 +338,7 @@ class _MatchCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          p['title'] as String? ?? 'Untitled',
+                          p['title'] as String? ?? '—',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -362,7 +355,7 @@ class _MatchCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     'ETB ${(p['estimatedValue'] as num).toStringAsFixed(0)} · '
-                    '${(p['condition'] as String?)?.replaceAll('_', ' ')}',
+                    '$conditionLabel',
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textMuted,
@@ -398,14 +391,19 @@ class _MatchCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Text(
-                        'From ${p['owner']?['name'] ?? 'someone'}',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textMuted,
+                      Expanded(
+                        child: Text(
+                          t.fromPerson(
+                            p['owner']?['name'] as String? ?? '—',
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textMuted,
+                          ),
                         ),
                       ),
-                      const Spacer(),
                       const Icon(
                         Icons.chevron_right,
                         size: 18,
@@ -420,5 +418,20 @@ class _MatchCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _conditionLabel(String? condition, AppLocalizations t) {
+    switch (condition) {
+      case 'NEW':
+        return t.conditionNew;
+      case 'LIKE_NEW':
+        return t.conditionLikeNew;
+      case 'GOOD':
+        return t.conditionGood;
+      case 'FAIR':
+        return t.conditionFair;
+      default:
+        return condition?.replaceAll('_', ' ') ?? '';
+    }
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/api_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/offers_provider.dart';
@@ -31,7 +32,6 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // Poll for new messages every 5s while this screen is open
     _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (mounted) {
         ref.invalidate(offerDetailProvider(widget.offerId));
@@ -71,7 +71,6 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       await api.sendOfferMessage(widget.offerId, text);
       _msgCtrl.clear();
       ref.invalidate(offerDetailProvider(widget.offerId));
-      // Wait a tick for the provider to refetch, then scroll
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     } catch (e) {
       if (!mounted) return;
@@ -87,6 +86,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   }
 
   Future<void> _doAction(String action) async {
+    final t = AppLocalizations.of(context)!;
     setState(() => _actionLoading = true);
     try {
       final api = ref.read(apiProvider);
@@ -97,14 +97,12 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       ref.invalidate(allChatsProvider);
 
       if (!mounted) return;
-      final label =
-          {
-            'accept': 'Offer accepted',
-            'decline': 'Offer declined',
-            'cancel': 'Offer cancelled',
-            'complete': 'Swap completed',
-          }[action] ??
-          action;
+      final label = {
+        'accept': t.offerAccepted,
+        'decline': t.offerDeclined,
+        'cancel': t.offerCancelled,
+        'complete': t.swapCompleted,
+      }[action] ?? action;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(label), backgroundColor: AppColors.primary),
       );
@@ -122,6 +120,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   }
 
   Future<bool> _confirmAction(String title, String message) async {
+    final t = AppLocalizations.of(context)!;
     return await showDialog<bool>(
           context: context,
           builder: (_) => AlertDialog(
@@ -130,13 +129,13 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
+                child: Text(t.cancel),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text(
-                  'Confirm',
-                  style: TextStyle(color: AppColors.primary),
+                child: Text(
+                  t.confirm,
+                  style: const TextStyle(color: AppColors.primary),
                 ),
               ),
             ],
@@ -147,10 +146,10 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final async = ref.watch(offerDetailProvider(widget.offerId));
     final currentUserId = ref.watch(authProvider).user?['id'] as String?;
 
-    // Scroll to bottom on first data + when message count grows
     ref.listen(offerDetailProvider(widget.offerId), (prev, next) {
       if (next.hasValue) {
         final msgs = (next.value?['messages'] as List?) ?? [];
@@ -171,9 +170,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             final isIncoming = offer['receiverId'] == currentUserId;
             final other = isIncoming ? offer['sender'] : offer['receiver'];
             final name = (other is Map ? other['name'] : null) as String?;
-            return Text(name ?? 'Chat');
+            return Text(name ?? t.chats);
           },
-          orElse: () => const Text('Chat'),
+          orElse: () => Text(t.chats),
         ),
       ),
       body: async.when(
@@ -182,44 +181,40 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           message: e.toString().replaceFirst('Exception: ', ''),
           onRetry: () => ref.invalidate(offerDetailProvider(widget.offerId)),
         ),
-        data: (offer) => _buildBody(offer, currentUserId),
+        data: (offer) => _buildBody(offer, currentUserId, t),
       ),
     );
   }
 
-  Widget _buildBody(Map<String, dynamic> offer, String? currentUserId) {
+  Widget _buildBody(
+    Map<String, dynamic> offer,
+    String? currentUserId,
+    AppLocalizations t,
+  ) {
     final amISender = offer['senderId'] == currentUserId;
     final amIReceiver = offer['receiverId'] == currentUserId;
     final status = offer['status'] as String? ?? 'PENDING';
 
-    final myProduct = amISender
-        ? offer['offeredProduct']
-        : offer['requestedProduct'];
-    final theirProduct = amISender
-        ? offer['requestedProduct']
-        : offer['offeredProduct'];
+    final myProduct =
+        amISender ? offer['offeredProduct'] : offer['requestedProduct'];
+    final theirProduct =
+        amISender ? offer['requestedProduct'] : offer['offeredProduct'];
 
     final messages = (offer['messages'] as List?) ?? [];
     final chatClosed = ['COMPLETED', 'DECLINED', 'CANCELLED'].contains(status);
 
     return Column(
       children: [
-        // ── Product pair header ──
         _ProductPairHeader(
           myProduct: myProduct,
           theirProduct: theirProduct,
           status: status,
         ),
-
-        // ── Action buttons ──
-        _buildActions(status, amISender, amIReceiver),
-
+        _buildActions(status, amISender, amIReceiver, t),
         const Divider(height: 1, color: AppColors.divider),
-
-        // ── Messages ──
         Expanded(
           child: messages.isEmpty
-              ? _emptyChat()
+              ? _emptyChat(t)
               : ListView.builder(
                   controller: _scrollController,
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -233,35 +228,37 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                     final senderName =
                         (m['sender'] is Map
                                 ? (m['sender'] as Map)['name']
-                                : null)
-                            as String? ??
-                        'Someone';
+                                : null) as String? ??
+                        t.someone;
                     final content = m['content'] as String? ?? '';
-                    DateTime? t;
+                    DateTime? time;
                     final raw = m['createdAt'];
                     if (raw is String) {
                       try {
-                        t = DateTime.parse(raw).toLocal();
+                        time = DateTime.parse(raw).toLocal();
                       } catch (_) {}
                     }
                     return _MessageBubble(
                       content: content,
                       mine: mine,
                       senderName: senderName,
-                      time: t,
+                      time: time,
                     );
                   },
                 ),
         ),
-
-        // ── Input / closed notice ──
-        if (!chatClosed) _buildInput(),
-        if (chatClosed) _closedNotice(status),
+        if (!chatClosed) _buildInput(t),
+        if (chatClosed) _closedNotice(status, t),
       ],
     );
   }
 
-  Widget _buildActions(String status, bool amISender, bool amIReceiver) {
+  Widget _buildActions(
+    String status,
+    bool amISender,
+    bool amIReceiver,
+    AppLocalizations t,
+  ) {
     if (_actionLoading) {
       return const Padding(
         padding: EdgeInsets.all(12),
@@ -288,8 +285,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                 child: OutlinedButton(
                   onPressed: () async {
                     final ok = await _confirmAction(
-                      'Decline offer?',
-                      'The offer will be closed and both products unlocked.',
+                      t.declineOfferConfirmTitle,
+                      t.declineOfferConfirmMessage,
                     );
                     if (ok) _doAction('decline');
                   },
@@ -301,7 +298,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Decline'),
+                  child: Text(t.declineOffer),
                 ),
               ),
               const SizedBox(width: 12),
@@ -309,9 +306,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                 child: ElevatedButton(
                   onPressed: () async {
                     final ok = await _confirmAction(
-                      'Accept offer?',
-                      'Ownership of both products will transfer immediately. '
-                          'Meet the other person to physically exchange items.',
+                      t.acceptOfferConfirmTitle,
+                      t.acceptOfferConfirmMessage,
                     );
                     if (ok) _doAction('accept');
                   },
@@ -323,7 +319,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Accept'),
+                  child: Text(t.acceptOffer),
                 ),
               ),
             ],
@@ -336,8 +332,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           child: OutlinedButton(
             onPressed: () async {
               final ok = await _confirmAction(
-                'Cancel offer?',
-                'The offer will be withdrawn. Both products unlock.',
+                t.cancelOfferConfirmTitle,
+                t.cancelOfferConfirmMessage,
               );
               if (ok) _doAction('cancel');
             },
@@ -349,7 +345,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Cancel offer'),
+            child: Text(t.cancelOffer),
           ),
         );
       }
@@ -361,13 +357,13 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         child: ElevatedButton.icon(
           onPressed: () async {
             final ok = await _confirmAction(
-              'Mark swap complete?',
-              'Only do this after you have physically exchanged items.',
+              t.completeSwapConfirmTitle,
+              t.completeSwapConfirmMessage,
             );
             if (ok) _doAction('complete');
           },
           icon: const Icon(Icons.check_circle_outline, size: 18),
-          label: const Text('Mark as completed'),
+          label: Text(t.completeSwap),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
             foregroundColor: AppColors.white,
@@ -383,7 +379,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     return const SizedBox.shrink();
   }
 
-  Widget _emptyChat() {
+  Widget _emptyChat(AppLocalizations t) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -403,18 +399,21 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'No messages yet',
-              style: TextStyle(
+            Text(
+              t.noMessagesYet,
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppColors.text,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Say hi and arrange the details.',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            Text(
+              t.sayHi,
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 13,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -423,7 +422,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     );
   }
 
-  Widget _buildInput() {
+  Widget _buildInput(AppLocalizations t) {
     return Container(
       padding: EdgeInsets.only(
         left: 12,
@@ -445,9 +444,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
               onSubmitted: (_) => _sendMessage(),
               minLines: 1,
               maxLines: 4,
-              decoration: const InputDecoration(
-                hintText: 'Write a message...',
-                contentPadding: EdgeInsets.symmetric(
+              decoration: InputDecoration(
+                hintText: t.writeMessage,
+                contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 12,
                 ),
@@ -479,7 +478,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     );
   }
 
-  Widget _closedNotice(String status) {
+  Widget _closedNotice(String status, AppLocalizations t) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(
@@ -491,8 +490,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       color: AppColors.primaryLight,
       child: Text(
         status == 'COMPLETED'
-            ? 'Swap completed — chat is closed.'
-            : 'This offer is ${status.toLowerCase()}. Chat is closed.',
+            ? t.chatClosedCompleted
+            : t.chatClosedOther(_statusLabel(status, t)),
         textAlign: TextAlign.center,
         style: const TextStyle(
           color: AppColors.textMuted,
@@ -502,9 +501,29 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       ),
     );
   }
+
+  String _statusLabel(String status, AppLocalizations t) {
+    switch (status) {
+      case 'PENDING':
+        return t.pending;
+      case 'ACCEPTED':
+        return t.accepted;
+      case 'COMPLETED':
+        return t.completed;
+      case 'DECLINED':
+        return t.declined;
+      case 'CANCELLED':
+        return t.cancelled;
+      default:
+        return status;
+    }
+  }
 }
 
-/// Compact header showing the two products in the deal.
+// ═══════════════════════════════════════════════════════
+//  Product pair header
+// ═══════════════════════════════════════════════════════
+
 class _ProductPairHeader extends StatelessWidget {
   final dynamic myProduct;
   final dynamic theirProduct;
@@ -518,13 +537,14 @@ class _ProductPairHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final theirImages =
         (theirProduct is Map ? theirProduct['images'] : null) as List? ?? [];
     final theirFirstImage = theirImages.isNotEmpty ? theirImages.first : null;
     final theirImageUrl =
         theirFirstImage is String && theirFirstImage.trim().isNotEmpty
-        ? AppConfig.resolveImageUrl(theirFirstImage)
-        : null;
+            ? AppConfig.resolveImageUrl(theirFirstImage)
+            : null;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -532,14 +552,13 @@ class _ProductPairHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Status pill ──
           Row(
             children: [
-              _statusPill(status),
+              _statusPill(status, t),
               const SizedBox(width: 8),
-              const Text(
-                'Barter deal',
-                style: TextStyle(
+              Text(
+                t.barterDeal,
+                style: const TextStyle(
                   fontSize: 11,
                   color: AppColors.textMuted,
                   fontWeight: FontWeight.w600,
@@ -548,20 +567,17 @@ class _ProductPairHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-
-          // ── Image + product pair ──
           Row(
             children: [
-              // Their product image (what I'm getting)
               GestureDetector(
                 onTap: theirImageUrl != null
                     ? () => showImageGallery(
-                        context,
-                        images: (theirImages
-                            .whereType<String>()
-                            .map(AppConfig.resolveImageUrl)
-                            .toList()),
-                      )
+                          context,
+                          images: theirImages
+                              .whereType<String>()
+                              .map(AppConfig.resolveImageUrl)
+                              .toList(),
+                        )
                     : null,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
@@ -592,9 +608,9 @@ class _ProductPairHeader extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'You give',
-                      style: TextStyle(
+                    Text(
+                      t.youGive,
+                      style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textMuted,
@@ -604,7 +620,7 @@ class _ProductPairHeader extends StatelessWidget {
                     Text(
                       (myProduct is Map ? myProduct['title'] : null)
                               as String? ??
-                          'Product',
+                          t.product,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -614,9 +630,9 @@ class _ProductPairHeader extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      'You get',
-                      style: TextStyle(
+                    Text(
+                      t.youGet,
+                      style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textMuted,
@@ -626,7 +642,7 @@ class _ProductPairHeader extends StatelessWidget {
                     Text(
                       (theirProduct is Map ? theirProduct['title'] : null)
                               as String? ??
-                          'Product',
+                          t.product,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -645,22 +661,36 @@ class _ProductPairHeader extends StatelessWidget {
     );
   }
 
-  Widget _statusPill(String status) {
+  Widget _statusPill(String status, AppLocalizations t) {
     late Color color;
+    late String label;
+
     switch (status) {
       case 'PENDING':
         color = AppColors.primary;
+        label = t.pending;
         break;
       case 'ACCEPTED':
+        color = const Color(0xFF2E7D32);
+        label = t.accepted;
+        break;
       case 'COMPLETED':
         color = const Color(0xFF2E7D32);
+        label = t.completed;
         break;
       case 'DECLINED':
         color = AppColors.error;
+        label = t.declined;
+        break;
+      case 'CANCELLED':
+        color = AppColors.textMuted;
+        label = t.cancelled;
         break;
       default:
         color = AppColors.textMuted;
+        label = status;
     }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: BoxDecoration(
@@ -668,7 +698,7 @@ class _ProductPairHeader extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        status,
+        label,
         style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
