@@ -6,7 +6,8 @@ import 'package:barter_ethio/widgets/image_gallery.dart';
 import 'package:barter_ethio/widgets/network_product_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import '../widgets/teaser_match_card.dart';
+import '../widgets/upgrade_prompt_sheet.dart';
 import '../config.dart';
 import '../providers/auth_provider.dart';
 import '../providers/matches_provider.dart';
@@ -164,8 +165,11 @@ class _MatchesList extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     final matches = (data['matches'] as List?) ?? [];
+    final teasers = (data['teaserMatches'] as List?) ?? [];
     final total = data['totalCount'] ?? 0;
     final hidden = data['hiddenCount'] ?? 0;
+    final tier = (data['tier'] as String?) ?? 'FREE';
+    final isFree = tier == 'FREE';
 
     if (matches.isEmpty) {
       return EmptyView(
@@ -175,14 +179,20 @@ class _MatchesList extends StatelessWidget {
       );
     }
 
+    final openUpgrade = () => showUpgradePromptSheet(
+          context,
+          hiddenCount: hidden,
+          totalCount: total,
+        );
+
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: onRefresh,
       child: ListView(
-        // Always scrollable so pull-to-refresh works even with 1 item
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
         children: [
+          // Header row
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: Row(
@@ -197,7 +207,9 @@ class _MatchesList extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    t.matchesCount(total),
+                    isFree
+                        ? '${matches.length} of $total matches'
+                        : t.matchesCount(total),
                     style: const TextStyle(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w600,
@@ -206,24 +218,169 @@ class _MatchesList extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                if (hidden > 0)
-                  Text(
-                    t.upgradeForMore,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
+                if (isFree && hidden > 0)
+                  GestureDetector(
+                    onTap: openUpgrade,
+                    child: const Row(
+                      children: [
+                        Icon(Icons.workspace_premium,
+                            size: 14, color: AppColors.primary),
+                        SizedBox(width: 4),
+                        Text(
+                          'Upgrade',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
               ],
             ),
           ),
+
+          // Visible matches (unchanged _MatchCard)
           ...matches.map((m) => _MatchCard(match: m)),
+
+          // Teaser matches for FREE users
+          if (isFree && teasers.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Container(height: 1, width: 24, color: AppColors.border),
+                const SizedBox(width: 8),
+                const Text(
+                  'More matches',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textMuted,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(child: Container(height: 1, color: AppColors.border)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ...teasers.map(
+              (teaser) => TeaserMatchCard(
+                teaser: teaser as Map<String, dynamic>,
+                onTap: openUpgrade,
+              ),
+            ),
+          ],
+
+          // Bottom upgrade CTA
+          if (isFree && hidden > 0) ...[
+            const SizedBox(height: 16),
+            _UpgradeCTA(hiddenCount: hidden, onTap: openUpgrade),
+          ],
         ],
       ),
     );
   }
 }
 
+/// Green paywall banner at the bottom of the FREE matches list.
+class _UpgradeCTA extends StatelessWidget {
+  final int hiddenCount;
+  final VoidCallback onTap;
+
+  const _UpgradeCTA({required this.hiddenCount, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.primary,
+              AppColors.primary.withValues(alpha: 0.85),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.lock_open,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              '$hiddenCount more match${hiddenCount == 1 ? '' : 'es'} waiting',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                letterSpacing: -0.2,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Upgrade to PRO to unlock all matches\nand post unlimited products',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.white,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.workspace_premium,
+                      color: AppColors.primary, size: 18),
+                  SizedBox(width: 6),
+                  Text(
+                    'Upgrade to PRO',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 class _MatchCard extends StatelessWidget {
   final Map<String, dynamic> match;
 

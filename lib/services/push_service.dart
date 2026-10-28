@@ -133,20 +133,21 @@ class PushService {
     debugPrint('[Push] Foreground: ${notif.title}');
 
     //  BARE resource names — no @drawable/ or @mipmap/ prefix
-    final androidDetails = AndroidNotificationDetails(
-      'barter_notifications',
-      'Barter Notifications',
-      channelDescription: 'Barter offers, messages, and updates',
-      importance: Importance.high,
-      priority: Priority.high,
-      icon: 'ic_notification',
-      largeIcon: const DrawableResourceAndroidBitmap('ic_notification'),
-      styleInformation: BigTextStyleInformation(
-        notif.body ?? '',
-        contentTitle: notif.title,
-      ),
-      color: const Color(0xFF00A86B),
-    );
+   final androidDetails = AndroidNotificationDetails(
+  'barter_notifications',
+  'Barter Notifications',
+  channelDescription: 'Barter offers, messages, and updates',
+  importance: Importance.high,
+  priority: Priority.high,
+  icon: 'ic_notification',
+  largeIcon: const DrawableResourceAndroidBitmap('ic_notification'),
+  styleInformation: BigTextStyleInformation(
+    notif.body ?? '',
+    contentTitle: notif.title,
+  ),
+  color: const Color(0xFF00A86B),
+  colorized: false,                    // ← ADD THIS LINE
+);
 
     const iosDetails = DarwinNotificationDetails(
       presentAlert: true,
