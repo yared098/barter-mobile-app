@@ -1,8 +1,5 @@
 import 'api_service.dart';
 
-
-import 'api_service.dart';
-
 class RequestsService {
   final ApiService _api;
   RequestsService(this._api);
@@ -27,7 +24,8 @@ class RequestsService {
   Future<Map<String, dynamic>> create(Map<String, dynamic> body) =>
       _api.post('/requests', body: body);
 
-  Future<Map<String, dynamic>> reply(String id, {
+  Future<Map<String, dynamic>> reply(
+    String id, {
     required String message,
     String? productId,
     double? offeredPrice,

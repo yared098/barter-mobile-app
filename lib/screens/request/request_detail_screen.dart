@@ -9,6 +9,18 @@ import '../theme.dart';
 import '../widgets/error_view.dart';
 import '../widgets/loading_view.dart';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'chat_detail_screen.dart';
+import '../l10n/app_localizations.dart';
+import '../providers/auth_provider.dart';
+import '../providers/offers_provider.dart';   // ← ADD THIS
+import '../providers/products_provider.dart';
+import '../providers/requests_provider.dart';
+import '../theme.dart';
+import '../widgets/error_view.dart';
+import '../widgets/loading_view.dart';
+
 class RequestDetailScreen extends ConsumerStatefulWidget {
   final String requestId;
   const RequestDetailScreen({super.key, required this.requestId});
@@ -73,6 +85,10 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
 
       ref.invalidate(requestDetailProvider(widget.requestId));
       ref.invalidate(wantedFeedProvider('mine'));
+      ref.invalidate(incomingOffersProvider);   // ← NEW
+      ref.invalidate(outgoingOffersProvider);   // ← NEW
+      ref.invalidate(allChatsProvider);         // ← NEW
+
 
       if (!mounted) return;
 
@@ -142,18 +158,37 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
               ref.invalidate(requestDetailProvider(widget.requestId)),
         ),
         data: (r) {
-          final isAuthor = r['isAuthor'] == true;
-          final canRespond = r['canRespond'] == true;
-          final canAccept = r['canAccept'] == true;
-          final responses = (r['responses'] as List?) ?? [];
-          final status = r['status'] as String? ?? 'OPEN';
+  // ── Robust flag resolution ──
+  // Prefer backend flags. Fall back to comparing IDs directly
+  // if the backend is a stale version that doesn't return them yet.
+  final me = ref.read(authProvider).user?['id'] as String?;
+  final author = r['author'] as Map<String, dynamic>?;
+  final authorId = r['authorId'] as String? ?? author?['id'] as String?;
 
-          return RefreshIndicator(
-            color: AppColors.primary,
-            onRefresh: () async {
-              ref.invalidate(requestDetailProvider(widget.requestId));
-              await ref.read(requestDetailProvider(widget.requestId).future);
-            },
+  final responses = (r['responses'] as List?) ?? [];
+  final status = r['status'] as String? ?? 'OPEN';
+
+  final isAuthor = (r['isAuthor'] as bool?) ??
+      (me != null && me == authorId);
+
+  final canRespond = (r['canRespond'] as bool?) ??
+      (!isAuthor && status == 'OPEN' && responses.isEmpty);
+
+  final canAccept = (r['canAccept'] as bool?) ??
+      (isAuthor && status == 'OPEN' && responses.isNotEmpty);
+
+  // ── Debug log (remove after verifying) ──
+  // ignore: avoid_print
+  print('[RequestDetail] me=$me authorId=$authorId '
+      'isAuthor=$isAuthor canRespond=$canRespond canAccept=$canAccept '
+      'responses=${responses.length} status=$status');
+
+  return RefreshIndicator(
+    color: AppColors.primary,
+    onRefresh: () async {
+      ref.invalidate(requestDetailProvider(widget.requestId));
+      await ref.read(requestDetailProvider(widget.requestId).future);
+    },
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),

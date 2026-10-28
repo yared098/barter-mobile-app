@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../l10n/app_localizations.dart';
+import '../providers/auth_provider.dart';
 import '../providers/requests_provider.dart';
 import '../theme.dart';
 import '../widgets/empty_view.dart';
 import '../widgets/error_view.dart';
 import '../widgets/loading_view.dart';
 import '../widgets/request_card.dart';
+import '../widgets/upgrade_prompt_sheet.dart';
 import 'create_request_screen.dart';
 import 'request_detail_screen.dart';
 
@@ -44,7 +46,44 @@ class _WantedBoardScreenState extends ConsumerState<WantedBoardScreen>
     super.dispose();
   }
 
+  bool _isPro(dynamic user) {
+    if (user == null) return false;
+    final tier = user['tier'] as String?;
+    if (tier != 'PRO') return false;
+    final proExpiresAt = user['proExpiresAt'];
+    if (proExpiresAt == null) return true;
+    try {
+      return DateTime.parse(proExpiresAt as String).isAfter(DateTime.now());
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /// Opens create screen — but checks tier limit first.
   Future<void> _openCreate() async {
+    final user = ref.read(authProvider).user;
+    final isPro = _isPro(user);
+
+    // FREE users: block if they already have 1 open request
+    if (!isPro) {
+      final mine = ref.read(wantedFeedProvider('mine')).asData?.value ?? [];
+      final openCount = mine
+          .whereType<Map<String, dynamic>>()
+          .where((r) => r['status'] == 'OPEN')
+          .length;
+
+      if (openCount >= 1) {
+        // Show upgrade prompt instead of the form
+        if (!mounted) return;
+        showUpgradePromptSheet(
+          context,
+          reason: UpgradeReason.products,
+        );
+        return;
+      }
+    }
+
+    // Proceed
     final created = await Navigator.of(context).push<bool>(
       MaterialPageRoute(builder: (_) => const CreateRequestScreen()),
     );
@@ -62,21 +101,7 @@ class _WantedBoardScreenState extends ConsumerState<WantedBoardScreen>
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: _buildAppBar(t),
-      floatingActionButton: showFab
-          ? FloatingActionButton.extended(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              onPressed: _openCreate,
-              icon: const Icon(Icons.add_rounded, size: 20),
-              label: Text(
-                t.postRequest,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13.5,
-                ),
-              ),
-            )
-          : null,
+      floatingActionButton: showFab ? _buildPostFab(t) : null,
       body: TabBarView(
         controller: _tabs,
         children: _scopes
@@ -88,6 +113,80 @@ class _WantedBoardScreenState extends ConsumerState<WantedBoardScreen>
                   },
                 ))
             .toList(),
+      ),
+    );
+  }
+
+  /// Tier-gated FAB:
+  ///   • PRO              → normal "Post request" (+ icon)
+  ///   • FREE with 0 open → normal "Post request" (+ icon)
+  ///   • FREE with 1 open → white "Go PRO" pill (crown icon)
+  Widget _buildPostFab(AppLocalizations t) {
+    final user = ref.watch(authProvider).user;
+    final isPro = _isPro(user);
+
+    // Count open requests only from "mine" feed (already cached)
+    final mineAsync = ref.watch(wantedFeedProvider('mine'));
+    final mine = mineAsync.asData?.value ?? [];
+    final openCount = mine
+        .whereType<Map<String, dynamic>>()
+        .where((r) => r['status'] == 'OPEN')
+        .length;
+
+    final canPost = isPro || openCount == 0;
+
+    if (canPost) {
+      return FloatingActionButton.extended(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        onPressed: _openCreate,
+        icon: const Icon(Icons.add_rounded, size: 20),
+        label: Text(
+          t.postRequest,
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 13.5,
+          ),
+        ),
+      );
+    }
+
+    // FREE at limit → "Go PRO" pill
+    return FloatingActionButton.extended(
+      backgroundColor: Colors.white,
+      foregroundColor: AppColors.primary,
+      elevation: 5,
+      onPressed: () => showUpgradePromptSheet(
+        context,
+        reason: UpgradeReason.products,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: AppColors.primary.withValues(alpha: 0.35),
+          width: 1.5,
+        ),
+      ),
+      icon: Container(
+        width: 22,
+        height: 22,
+        decoration: const BoxDecoration(
+          color: AppColors.primaryLight,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(
+          Icons.workspace_premium,
+          size: 14,
+          color: AppColors.primary,
+        ),
+      ),
+      label: const Text(
+        'Go PRO',
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 13.5,
+          letterSpacing: 0.1,
+        ),
       ),
     );
   }

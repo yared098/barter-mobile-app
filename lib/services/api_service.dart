@@ -427,30 +427,7 @@ Future<void> clearAllLocalData() async {
     _parse(res);
   }
 
-  // ─────────────────────────── UPLOAD ───────────────────────────
-
-  // Future<String> uploadImage(File file) async {
-  //   final req = http.MultipartRequest(
-  //     'POST',
-  //     Uri.parse('${AppConfig.apiBaseUrl}/upload'),
-  //   );
-  //   req.headers['Authorization'] = 'Bearer $_accessToken';
-  //   req.files.add(await http.MultipartFile.fromPath('file', file.path));
-
-  //   final streamed = await req.send();
-  //   final res = await http.Response.fromStream(streamed);
-  //   final data = jsonDecode(res.body);
-
-  //   if (res.statusCode >= 200 && res.statusCode < 300) {
-  //     return data['url'] as String;
-  //   }
-
-  //   throw ApiException(
-  //     data['message']?.toString() ?? 'Upload failed',
-  //     res.statusCode,
-  //   );
-  // }
-
+ 
   // ─────────────────────────── UPLOAD ───────────────────────────
 
   Future<String> uploadImage(File file) async {

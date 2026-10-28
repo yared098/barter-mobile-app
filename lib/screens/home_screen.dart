@@ -1,3 +1,5 @@
+
+
 import 'package:barter_ethio/l10n/app_localizations.dart';
 import 'package:barter_ethio/providers/offers_provider.dart';
 import 'package:barter_ethio/screens/chats_screen.dart';
@@ -17,7 +19,6 @@ import '../widgets/loading_view.dart';
 import 'login_screen.dart';
 import 'post_product_screen.dart';
 import 'wanted_board_screen.dart';
-
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -67,12 +68,33 @@ class _HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(66);
 
+  /// Resolve the best possible display name from the user record.
+  /// Tries: name → firstName → email prefix → empty string.
+  String _resolveName(dynamic user) {
+    final name = (user?['name'] as String?)?.trim();
+    if (name != null && name.isNotEmpty) return name;
+
+    final first = (user?['firstName'] as String?)?.trim();
+    if (first != null && first.isNotEmpty) return first;
+
+    final email = (user?['email'] as String?)?.trim();
+    if (email != null && email.isNotEmpty) {
+      return email.split('@').first;
+    }
+
+    return '';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = AppLocalizations.of(context)!;
     final user = ref.watch(authProvider).user;
 
-    final rawName = (user?['name'] as String?)?.trim() ?? '';
+    // ── DEBUG — remove after confirming the name shows correctly ──
+    // ignore: avoid_print
+    print('[HomeAppBar] user=$user');
+
+    final rawName = _resolveName(user);
     final firstName = rawName.split(RegExp(r'\s+')).first;
     final isPro = (user?['tier'] as String?) == 'PRO';
 
@@ -102,11 +124,11 @@ class _HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
           ],
         ),
       ),
-      titleSpacing: 14,
+      titleSpacing: 12,
       title: Row(
         children: [
-          _Avatar(firstName: firstName),
-          const SizedBox(width: 10),
+          _Avatar(firstName: firstName, isPro: isPro),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,7 +142,7 @@ class _HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 16.5,
+                          fontSize: 16,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.3,
                           height: 1.2,
@@ -128,7 +150,7 @@ class _HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       ),
                     ),
                     if (isPro) ...[
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 5),
                       const _ProBadge(),
                     ],
                   ],
@@ -152,26 +174,117 @@ class _HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
       ),
       actions: [
         const _PostActionButton(),
-        _ChatsIconButton(
-          onTap: onOpenChats,
+        _CompactIconButton(
+          icon: Icons.chat_bubble_outline,
           tooltip: t.chats,
-          light: true,
+          onTap: onOpenChats,
+          showPendingBadge: true,
         ),
-        IconButton(
-  icon: const Icon(Icons.assignment_outlined, color: Colors.white),
-  tooltip: 'Wanted board',
-  onPressed: () {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const WantedBoardScreen()),
-    );
-  },
-),
+        _CompactIconButton(
+          icon: Icons.assignment_outlined,
+          tooltip: 'Wanted board',
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const WantedBoardScreen()),
+            );
+          },
+        ),
         const _OverflowMenu(),
-        const SizedBox(width: 4),
+        const SizedBox(width: 2),
       ],
     );
   }
 }
+
+/// Compact 36×36 icon button for the AppBar actions row.
+/// Optional pending-count badge for chats.
+class _CompactIconButton extends ConsumerWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+  final bool showPendingBadge;
+
+  const _CompactIconButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+    this.showPendingBadge = false,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    int pending = 0;
+    if (showPendingBadge) {
+      final incoming = ref.watch(incomingOffersProvider).value ?? [];
+      final outgoing = ref.watch(outgoingOffersProvider).value ?? [];
+      for (final o in [...incoming, ...outgoing]) {
+        if (o is Map && o['status'] == 'PENDING') pending++;
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 1, vertical: 8),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          splashColor: Colors.white.withValues(alpha: 0.20),
+          highlightColor: Colors.white.withValues(alpha: 0.10),
+          child: Tooltip(
+            message: tooltip,
+            child: SizedBox(
+              width: 36,
+              height: 36,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  Icon(icon, color: Colors.white, size: 20),
+                  if (pending > 0)
+                    Positioned(
+                      right: 2,
+                      top: 2,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 1,
+                        ),
+                        constraints: const BoxConstraints(minWidth: 14),
+                        decoration: BoxDecoration(
+                          color: AppColors.error,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 1.2,
+                          ),
+                        ),
+                        child: Text(
+                          pending > 9 ? '9+' : '$pending',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w800,
+                            height: 1.2,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  POST BUTTON — tier-gated pill
+// ═══════════════════════════════════════════════════════
 
 class _PostActionButton extends ConsumerWidget {
   const _PostActionButton();
@@ -257,26 +370,26 @@ class _AppBarPillButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 10),
       child: Material(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
           splashColor: AppColors.primary.withValues(alpha: 0.15),
           highlightColor: AppColors.primary.withValues(alpha: 0.06),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 14, color: AppColors.primary),
-                const SizedBox(width: 4),
+                Icon(icon, size: 13, color: AppColors.primary),
+                const SizedBox(width: 3),
                 Text(
                   label,
                   style: const TextStyle(
-                    fontSize: 11.5,
+                    fontSize: 11,
                     fontWeight: FontWeight.w800,
                     color: AppColors.primary,
                     letterSpacing: 0.2,
@@ -292,34 +405,93 @@ class _AppBarPillButton extends StatelessWidget {
   }
 }
 
+// ═══════════════════════════════════════════════════════
+//  AVATAR — with PRO ring when applicable
+// ═══════════════════════════════════════════════════════
+
 class _Avatar extends StatelessWidget {
   final String firstName;
-  const _Avatar({required this.firstName});
+  final bool isPro;
+  const _Avatar({required this.firstName, this.isPro = false});
 
   @override
   Widget build(BuildContext context) {
     final initial =
         firstName.isNotEmpty ? firstName.characters.first.toUpperCase() : '?';
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.white.withValues(alpha: 0.18),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.35),
-          width: 1.2,
+
+    const proRing = Color(0xFF22C55E);
+    const proGlow = Color(0xFF16A34A);
+
+    final size = isPro ? 40.0 : 36.0;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        if (isPro)
+          Container(
+            width: size + 4,
+            height: size + 4,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  proGlow.withValues(alpha: 0.30),
+                  proGlow.withValues(alpha: 0.0),
+                ],
+              ),
+            ),
+          ),
+        Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withValues(alpha: 0.20),
+            border: Border.all(
+              color: isPro ? proRing : Colors.white.withValues(alpha: 0.35),
+              width: isPro ? 2.4 : 1.2,
+            ),
+            boxShadow: isPro
+                ? [
+                    BoxShadow(
+                      color: proRing.withValues(alpha: 0.45),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : null,
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            initial,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: isPro ? 16 : 15,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.3,
+            ),
+          ),
         ),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        initial,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 15,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
+        if (isPro)
+          Positioned(
+            right: -2,
+            bottom: -2,
+            child: Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: proRing,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1.8),
+              ),
+              child: const Icon(
+                Icons.check_rounded,
+                size: 10,
+                color: Colors.white,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -354,6 +526,10 @@ class _ProBadge extends StatelessWidget {
     );
   }
 }
+
+// ═══════════════════════════════════════════════════════
+//  OVERFLOW MENU
+// ═══════════════════════════════════════════════════════
 
 class _OverflowMenu extends ConsumerWidget {
   const _OverflowMenu();
@@ -409,70 +585,8 @@ class _OverflowMenu extends ConsumerWidget {
   }
 }
 
-class _ChatsIconButton extends ConsumerWidget {
-  final VoidCallback onTap;
-  final String? tooltip;
-  final bool light;
-  const _ChatsIconButton({
-    required this.onTap,
-    this.tooltip,
-    this.light = false,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final incoming = ref.watch(incomingOffersProvider).value ?? [];
-    final outgoing = ref.watch(outgoingOffersProvider).value ?? [];
-
-    int pending = 0;
-    for (final o in [...incoming, ...outgoing]) {
-      if (o is Map && o['status'] == 'PENDING') pending++;
-    }
-
-    return IconButton(
-      onPressed: onTap,
-      tooltip: tooltip,
-      icon: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Icon(
-            Icons.chat_bubble_outline,
-            color: light ? Colors.white : null,
-          ),
-          if (pending > 0)
-            Positioned(
-              right: -6,
-              top: -4,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                constraints: const BoxConstraints(minWidth: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.error,
-                  borderRadius: BorderRadius.circular(10),
-                  border: light
-                      ? Border.all(color: Colors.white, width: 1.2)
-                      : null,
-                ),
-                child: Text(
-                  pending > 9 ? '9+' : '$pending',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    height: 1.3,
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
 // ═══════════════════════════════════════════════════════
-//  MATCHES LIST
+//  MATCHES LIST  (unchanged)
 // ═══════════════════════════════════════════════════════
 
 class _MatchesList extends StatelessWidget {
@@ -527,7 +641,6 @@ class _MatchesList extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
         children: [
-          // ── Compact header ──
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Row(
@@ -589,7 +702,6 @@ class _MatchesList extends StatelessWidget {
             ),
           ),
 
-          // ── Visible matches ──
           ...matches.map((m) {
             final match = m as Map<String, dynamic>;
             final p = match['product'] as Map<String, dynamic>;
@@ -625,7 +737,6 @@ class _MatchesList extends StatelessWidget {
             );
           }),
 
-          // ── Teaser section ──
           if (isFree && teasers.isNotEmpty) ...[
             const SizedBox(height: 6),
             _TeaserSection(
@@ -640,7 +751,6 @@ class _MatchesList extends StatelessWidget {
   }
 }
 
-/// Compact teaser section — badge + locked MatchCards.
 class _TeaserSection extends StatelessWidget {
   final List<Map<String, dynamic>> teasers;
   final int hidden;
@@ -701,7 +811,6 @@ class _TeaserSection extends StatelessWidget {
             ],
           ),
         ),
-
         ...teasers.map(
           (teaser) => MatchCard(
             locked: true,
