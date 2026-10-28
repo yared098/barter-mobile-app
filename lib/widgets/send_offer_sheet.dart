@@ -5,7 +5,7 @@ import '../config.dart';
 import '../providers/api_provider.dart';
 import '../providers/products_provider.dart';
 import '../theme.dart';
-import '../screens/post_product_screen.dart';
+import '../screens/barter/post_product_screen.dart';
 import 'primary_button.dart';
 
 Future<bool?> showSendOfferSheet(

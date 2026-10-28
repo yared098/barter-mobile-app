@@ -5,10 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
-import '../l10n/app_localizations.dart';
-import '../providers/categories_provider.dart';
-import '../providers/requests_provider.dart';
-import '../theme.dart';
+import '../../l10n/app_localizations.dart';
+import '../../providers/categories_provider.dart';
+import '../../providers/requests_provider.dart';
+import '../../theme.dart';
 
 class CreateRequestScreen extends ConsumerStatefulWidget {
   const CreateRequestScreen({super.key});

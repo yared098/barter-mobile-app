@@ -3,15 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../config.dart';
-import '../l10n/app_localizations.dart';
-import '../providers/api_provider.dart';
-import '../providers/auth_provider.dart';
-import '../providers/offers_provider.dart';
-import '../theme.dart';
-import '../widgets/error_view.dart';
-import '../widgets/image_gallery.dart';
-import '../widgets/loading_view.dart';
+import '../../config.dart';
+import '../../l10n/app_localizations.dart';
+import '../../providers/api_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/offers_provider.dart';
+import '../../theme.dart';
+import '../../widgets/error_view.dart';
+import '../../widgets/image_gallery.dart';
+import '../../widgets/loading_view.dart';
 
 class ChatDetailScreen extends ConsumerStatefulWidget {
   final String offerId;

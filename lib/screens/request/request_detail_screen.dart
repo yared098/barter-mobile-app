@@ -1,25 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'chat_detail_screen.dart';
-import '../l10n/app_localizations.dart';
-import '../providers/auth_provider.dart';
-import '../providers/products_provider.dart';
-import '../providers/requests_provider.dart';
-import '../theme.dart';
-import '../widgets/error_view.dart';
-import '../widgets/loading_view.dart';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'chat_detail_screen.dart';
-import '../l10n/app_localizations.dart';
-import '../providers/auth_provider.dart';
-import '../providers/offers_provider.dart';   // ← ADD THIS
-import '../providers/products_provider.dart';
-import '../providers/requests_provider.dart';
-import '../theme.dart';
-import '../widgets/error_view.dart';
-import '../widgets/loading_view.dart';
+import '../chat/chat_detail_screen.dart';
+import '../../l10n/app_localizations.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/offers_provider.dart';
+import '../../providers/products_provider.dart';
+import '../../providers/requests_provider.dart';
+import '../../theme.dart';
+import '../../widgets/error_view.dart';
+import '../../widgets/loading_view.dart';
 
 class RequestDetailScreen extends ConsumerStatefulWidget {
   final String requestId;

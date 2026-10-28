@@ -9,9 +9,11 @@ import 'config.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/locale_provider.dart';
-import 'screens/splash_screen.dart';
+import 'screens/auth/splash_screen.dart';
 import 'services/push_service.dart';
 import 'theme.dart';
+
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

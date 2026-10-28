@@ -2,8 +2,8 @@
 
 import 'package:barter_ethio/l10n/app_localizations.dart';
 import 'package:barter_ethio/providers/offers_provider.dart';
-import 'package:barter_ethio/screens/chats_screen.dart';
-import 'package:barter_ethio/screens/product_detail_screen.dart';
+import 'package:barter_ethio/screens/chat/chats_screen.dart';
+import 'package:barter_ethio/screens/barter/product_detail_screen.dart';
 import 'package:barter_ethio/widgets/image_gallery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,9 +16,9 @@ import '../theme.dart';
 import '../widgets/empty_view.dart';
 import '../widgets/error_view.dart';
 import '../widgets/loading_view.dart';
-import 'login_screen.dart';
-import 'post_product_screen.dart';
-import 'wanted_board_screen.dart';
+import 'auth/login_screen.dart';
+import 'barter/post_product_screen.dart';
+import 'request/wanted_board_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../config.dart';
-import '../l10n/app_localizations.dart';
-import '../providers/auth_provider.dart';
-import '../providers/offers_provider.dart';
-import '../theme.dart';
-import '../widgets/empty_view.dart';
-import '../widgets/error_view.dart';
-import '../widgets/loading_view.dart';
+import '../../config.dart';
+import '../../l10n/app_localizations.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/offers_provider.dart';
+import '../../theme.dart';
+import '../../widgets/empty_view.dart';
+import '../../widgets/error_view.dart';
+import '../../widgets/loading_view.dart';
 import 'chat_detail_screen.dart';
 
 class ChatsScreen extends ConsumerWidget {

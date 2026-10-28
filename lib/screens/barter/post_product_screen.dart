@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../l10n/app_localizations.dart';
-import '../providers/api_provider.dart';
-import '../providers/categories_provider.dart';
-import '../providers/matches_provider.dart';
-import '../providers/products_provider.dart';
-import '../theme.dart';
-import '../widgets/primary_button.dart';
-import 'home_screen.dart';
+import '../../l10n/app_localizations.dart';
+import '../../providers/api_provider.dart';
+import '../../providers/categories_provider.dart';
+import '../../providers/matches_provider.dart';
+import '../../providers/products_provider.dart';
+import '../../theme.dart';
+import '../../widgets/primary_button.dart';
+import '../home_screen.dart';
 
 class PostProductScreen extends ConsumerStatefulWidget {
   final bool isFirstProduct;

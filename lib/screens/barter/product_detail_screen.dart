@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../config.dart';
-import '../l10n/app_localizations.dart';
-import '../providers/api_provider.dart';
-import '../providers/matches_provider.dart';
-import '../providers/offers_provider.dart';
-import '../theme.dart';
-import '../widgets/error_view.dart';
-import '../widgets/image_gallery.dart';
-import '../widgets/loading_view.dart';
-import '../widgets/send_offer_sheet.dart';
+import '../../config.dart';
+import '../../l10n/app_localizations.dart';
+import '../../providers/api_provider.dart';
+import '../../providers/matches_provider.dart';
+import '../../providers/offers_provider.dart';
+import '../../theme.dart';
+import '../../widgets/error_view.dart';
+import '../../widgets/image_gallery.dart';
+import '../../widgets/loading_view.dart';
+import '../../widgets/send_offer_sheet.dart';
 
 /// Public product detail — fetched by id.
 final productDetailProvider = FutureProvider.autoDispose

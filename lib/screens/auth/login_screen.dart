@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../config.dart';
-import '../l10n/app_localizations.dart';
-import '../providers/auth_provider.dart';
-import '../providers/locale_provider.dart';
-import '../providers/products_provider.dart';
-import '../theme.dart';
-import 'home_screen.dart';
-import 'post_product_screen.dart';
+import '../../config.dart';
+import '../../l10n/app_localizations.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/locale_provider.dart';
+import '../../providers/products_provider.dart';
+import '../../theme.dart';
+import '../home_screen.dart';
+import '../barter/post_product_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
