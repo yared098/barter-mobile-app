@@ -424,4 +424,309 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryFallback => 'Category';
+
+  @override
+  String get postARequest => 'Post a request';
+
+  @override
+  String get whatDoYouNeed => 'What do you need?';
+
+  @override
+  String get requestTitleHint => 'e.g. iPhone 12, 40GB storage, 6GB RAM';
+
+  @override
+  String get details => 'Details';
+
+  @override
+  String get requestDescriptionHint => 'Condition, color, extra requirements…';
+
+  @override
+  String get category => 'Category';
+
+  @override
+  String get couldNotLoadCategories => 'Could not load categories';
+
+  @override
+  String get howWillYouPay => 'How will you pay?';
+
+  @override
+  String get cash => 'Cash';
+
+  @override
+  String get barter => 'Barter';
+
+  @override
+  String get either => 'Either';
+
+  @override
+  String get budgetEthOptional => 'Budget (ETB, optional)';
+
+  @override
+  String get min => 'Min';
+
+  @override
+  String get max => 'Max';
+
+  @override
+  String get specificationsOptional => 'Specifications (optional)';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get specKeyHint => 'Key (e.g. storage)';
+
+  @override
+  String get specValueHint => 'Value (e.g. 40GB)';
+
+  @override
+  String get pickupLocationOptional => 'Pickup location (optional)';
+
+  @override
+  String get gettingYourLocation => 'Getting your location…';
+
+  @override
+  String get updateMyLocation => 'Update my location';
+
+  @override
+  String get useMyCurrentLocation => 'Use my current location';
+
+  @override
+  String gpsCaptured(String lat, String lng) {
+    return 'GPS captured · $lat, $lng';
+  }
+
+  @override
+  String get locationNameHint => 'e.g. Addis Ababa, Bole';
+
+  @override
+  String get locationEditHint =>
+      'Tap the field to edit the text label — GPS coordinates stay attached.';
+
+  @override
+  String get locationAttachHint =>
+      'Tap the button above to attach GPS, or type a location manually.';
+
+  @override
+  String get postRequest => 'Post request';
+
+  @override
+  String get titleTooShort => 'Title must be at least 3 characters';
+
+  @override
+  String get addDescriptionPrompt => 'Please add a short description';
+
+  @override
+  String get pickCategoryPrompt => 'Pick a category';
+
+  @override
+  String get budgetRangeInvalid => 'Min budget cannot exceed max budget';
+
+  @override
+  String get requestPostedSuccess =>
+      'Request posted — matching sellers notified ✅';
+
+  @override
+  String get turnOnLocation =>
+      'Please turn on your device location, then try again.';
+
+  @override
+  String get locationPermissionDenied => 'Location permission denied.';
+
+  @override
+  String get locationPermissionBlocked =>
+      'Location permission blocked. Enable it in app settings.';
+
+  @override
+  String get locationCaptured => 'Location captured 📍';
+
+  @override
+  String get locationServicesDisabled => 'Location services are disabled.';
+
+  @override
+  String get locationTimeout =>
+      'Could not get location in time. Move to an open area and retry.';
+
+  @override
+  String get locationDeniedByUser =>
+      'Permission denied. Location was not captured.';
+
+  @override
+  String locationError(String error) {
+    return 'Location error: $error';
+  }
+
+  @override
+  String get wantedBoard => 'Wanted board';
+
+  @override
+  String get wantedBoardSubtitle => 'See what people are looking for';
+
+  @override
+  String get browse => 'Browse';
+
+  @override
+  String get myRequests => 'My Requests';
+
+  @override
+  String get myReplies => 'My Replies';
+
+  @override
+  String get loadingRequests => 'Loading requests…';
+
+  @override
+  String get noRequestsYet => 'No requests yet';
+
+  @override
+  String get noRepliesYet => 'No replies yet';
+
+  @override
+  String get nobodyAskingYet => 'Nobody is asking yet';
+
+  @override
+  String get tapPostRequestHint =>
+      'Tap “Post request” to tell sellers what you need.';
+
+  @override
+  String get browseBoardHint =>
+      'Browse the board and respond to open requests.';
+
+  @override
+  String get boardQuietHint => 'The board is quiet. Be the first to post.';
+
+  @override
+  String get request => 'Request';
+
+  @override
+  String get acceptThisReply => 'Accept this reply?';
+
+  @override
+  String get acceptReplyBody =>
+      'The other person will be notified and a chat will open so you can finalize the deal.';
+
+  @override
+  String get accept => 'Accept';
+
+  @override
+  String get replyAcceptedSuccess => 'Reply accepted — starting chat 🎉';
+
+  @override
+  String get replyWithdrawn => 'Reply withdrawn';
+
+  @override
+  String get respondToRequest => 'Respond to this request';
+
+  @override
+  String get pickBestOffer => 'Pick the best offer';
+
+  @override
+  String replyCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count replies',
+      one: '1 reply',
+      zero: 'No replies yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noRepliesPullToRefresh =>
+      'No replies yet. Matching sellers were notified — pull down to refresh.';
+
+  @override
+  String get yourReply => 'Your reply';
+
+  @override
+  String get replyAcceptedBanner =>
+      'A reply was accepted — deal is in progress.';
+
+  @override
+  String get withdrawMyReply => 'Withdraw my reply';
+
+  @override
+  String get replyToRequest => 'Reply to request';
+
+  @override
+  String get requesterWillBeNotified => 'The requester will be notified.';
+
+  @override
+  String get attachProductOptional => 'Attach a product (optional)';
+
+  @override
+  String get noAvailableProductsMessage =>
+      'No available products — reply will be message-only.';
+
+  @override
+  String get askPriceOptional => 'Ask price (ETB, optional)';
+
+  @override
+  String get replyMessageHint => 'Write your message…';
+
+  @override
+  String get sendReply => 'Send reply';
+
+  @override
+  String get loading => 'Loading…';
+
+  @override
+  String offers(String title) {
+    return 'Offers: $title';
+  }
+
+  @override
+  String get replySentSuccess => 'Reply sent ✅';
+
+  @override
+  String postedBy(String name) {
+    return 'by $name';
+  }
+
+  @override
+  String etbAmount(String amount) {
+    return 'ETB $amount';
+  }
+
+  @override
+  String etbRange(String min, String max) {
+    return 'ETB $min – $max';
+  }
+
+  @override
+  String etbMinPlus(String min) {
+    return 'ETB $min+';
+  }
+
+  @override
+  String etbUpTo(String max) {
+    return 'up to ETB $max';
+  }
+
+  @override
+  String get statusOpen => 'OPEN';
+
+  @override
+  String get statusClosed => 'CLOSED';
+
+  @override
+  String get statusFulfilled => 'FULFILLED';
+
+  @override
+  String get statusExpired => 'EXPIRED';
+
+  @override
+  String get statusCancelled => 'CANCELLED';
+
+  @override
+  String get replyPendingStatus => 'PENDING';
+
+  @override
+  String get replyAcceptedStatus => 'ACCEPTED';
+
+  @override
+  String get replyRejectedStatus => 'REJECTED';
+
+  @override
+  String get replyWithdrawnStatus => 'WITHDRAWN';
 }

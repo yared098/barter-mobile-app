@@ -207,7 +207,7 @@ class _PostProductScreenState extends ConsumerState<PostProductScreen> {
               controller: _titleCtrl,
               validator: (v) =>
                   (v ?? '').trim().length < 3 ? t.titleMinLength : null,
-              decoration: InputDecoration(hintText: t.titleHint),
+              decoration: InputDecoration(hintText: t.requestTitleHint),
             ),
             const SizedBox(height: 16),
 
@@ -218,7 +218,7 @@ class _PostProductScreenState extends ConsumerState<PostProductScreen> {
               maxLines: 3,
               validator: (v) =>
                   (v ?? '').trim().length < 10 ? t.descriptionMinLength : null,
-              decoration: InputDecoration(hintText: t.descriptionHint),
+              decoration: InputDecoration(hintText: t.requestDescriptionHint),
             ),
             const SizedBox(height: 16),
 

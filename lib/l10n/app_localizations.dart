@@ -734,7 +734,7 @@ abstract class AppLocalizations {
   /// **'This offer is {status}. Chat is closed.'**
   String chatClosedOther(String status);
 
-  /// No description provided for @someone.
+  /// Fallback when name is missing
   ///
   /// In en, this message translates to:
   /// **'Someone'**
@@ -859,6 +859,540 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Category'**
   String get categoryFallback;
+
+  /// AppBar title of CreateRequestScreen
+  ///
+  /// In en, this message translates to:
+  /// **'Post a request'**
+  String get postARequest;
+
+  /// Section label for title field
+  ///
+  /// In en, this message translates to:
+  /// **'What do you need?'**
+  String get whatDoYouNeed;
+
+  /// Hint text for Create Request title field
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. iPhone 12, 40GB storage, 6GB RAM'**
+  String get requestTitleHint;
+
+  /// Section label for description
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get details;
+
+  /// Hint for Create Request description field
+  ///
+  /// In en, this message translates to:
+  /// **'Condition, color, extra requirements…'**
+  String get requestDescriptionHint;
+
+  /// Category section label
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get category;
+
+  /// Error when categories fail
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load categories'**
+  String get couldNotLoadCategories;
+
+  /// Payment type section label
+  ///
+  /// In en, this message translates to:
+  /// **'How will you pay?'**
+  String get howWillYouPay;
+
+  /// Cash payment type
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get cash;
+
+  /// Barter payment type
+  ///
+  /// In en, this message translates to:
+  /// **'Barter'**
+  String get barter;
+
+  /// Either cash or barter
+  ///
+  /// In en, this message translates to:
+  /// **'Either'**
+  String get either;
+
+  /// Budget section label
+  ///
+  /// In en, this message translates to:
+  /// **'Budget (ETB, optional)'**
+  String get budgetEthOptional;
+
+  /// Minimum label
+  ///
+  /// In en, this message translates to:
+  /// **'Min'**
+  String get min;
+
+  /// Maximum label
+  ///
+  /// In en, this message translates to:
+  /// **'Max'**
+  String get max;
+
+  /// Specifications section label
+  ///
+  /// In en, this message translates to:
+  /// **'Specifications (optional)'**
+  String get specificationsOptional;
+
+  /// Add button
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// Spec key input hint
+  ///
+  /// In en, this message translates to:
+  /// **'Key (e.g. storage)'**
+  String get specKeyHint;
+
+  /// Spec value input hint
+  ///
+  /// In en, this message translates to:
+  /// **'Value (e.g. 40GB)'**
+  String get specValueHint;
+
+  /// Location section label
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup location (optional)'**
+  String get pickupLocationOptional;
+
+  /// Spinner message while GPS is fetching
+  ///
+  /// In en, this message translates to:
+  /// **'Getting your location…'**
+  String get gettingYourLocation;
+
+  /// Location button when already captured
+  ///
+  /// In en, this message translates to:
+  /// **'Update my location'**
+  String get updateMyLocation;
+
+  /// Location button before capture
+  ///
+  /// In en, this message translates to:
+  /// **'Use my current location'**
+  String get useMyCurrentLocation;
+
+  /// Chip showing captured coordinates
+  ///
+  /// In en, this message translates to:
+  /// **'GPS captured · {lat}, {lng}'**
+  String gpsCaptured(String lat, String lng);
+
+  /// Location name text field hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Addis Ababa, Bole'**
+  String get locationNameHint;
+
+  /// Hint shown under the location field when GPS is captured
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the field to edit the text label — GPS coordinates stay attached.'**
+  String get locationEditHint;
+
+  /// Hint shown under the location field when no GPS yet
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the button above to attach GPS, or type a location manually.'**
+  String get locationAttachHint;
+
+  /// Post request button and FAB label
+  ///
+  /// In en, this message translates to:
+  /// **'Post request'**
+  String get postRequest;
+
+  /// Validation error snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Title must be at least 3 characters'**
+  String get titleTooShort;
+
+  /// Validation error snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Please add a short description'**
+  String get addDescriptionPrompt;
+
+  /// Validation error snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a category'**
+  String get pickCategoryPrompt;
+
+  /// Validation error snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Min budget cannot exceed max budget'**
+  String get budgetRangeInvalid;
+
+  /// Success snackbar after posting a request
+  ///
+  /// In en, this message translates to:
+  /// **'Request posted — matching sellers notified ✅'**
+  String get requestPostedSuccess;
+
+  /// Location service disabled snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Please turn on your device location, then try again.'**
+  String get turnOnLocation;
+
+  /// Permission denied snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission denied.'**
+  String get locationPermissionDenied;
+
+  /// Permission permanently denied snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission blocked. Enable it in app settings.'**
+  String get locationPermissionBlocked;
+
+  /// Success snackbar after GPS capture
+  ///
+  /// In en, this message translates to:
+  /// **'Location captured 📍'**
+  String get locationCaptured;
+
+  /// Geolocator exception snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Location services are disabled.'**
+  String get locationServicesDisabled;
+
+  /// GPS timeout snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Could not get location in time. Move to an open area and retry.'**
+  String get locationTimeout;
+
+  /// Permission exception snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Permission denied. Location was not captured.'**
+  String get locationDeniedByUser;
+
+  /// Generic location error snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Location error: {error}'**
+  String locationError(String error);
+
+  /// Title of WantedBoardScreen
+  ///
+  /// In en, this message translates to:
+  /// **'Wanted board'**
+  String get wantedBoard;
+
+  /// Subtitle of WantedBoardScreen
+  ///
+  /// In en, this message translates to:
+  /// **'See what people are looking for'**
+  String get wantedBoardSubtitle;
+
+  /// Browse tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Browse'**
+  String get browse;
+
+  /// My Requests tab label
+  ///
+  /// In en, this message translates to:
+  /// **'My Requests'**
+  String get myRequests;
+
+  /// My Replies tab label
+  ///
+  /// In en, this message translates to:
+  /// **'My Replies'**
+  String get myReplies;
+
+  /// Loading message
+  ///
+  /// In en, this message translates to:
+  /// **'Loading requests…'**
+  String get loadingRequests;
+
+  /// Empty state title
+  ///
+  /// In en, this message translates to:
+  /// **'No requests yet'**
+  String get noRequestsYet;
+
+  /// Empty state title
+  ///
+  /// In en, this message translates to:
+  /// **'No replies yet'**
+  String get noRepliesYet;
+
+  /// Empty state title
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody is asking yet'**
+  String get nobodyAskingYet;
+
+  /// Empty state hint for My Requests
+  ///
+  /// In en, this message translates to:
+  /// **'Tap “Post request” to tell sellers what you need.'**
+  String get tapPostRequestHint;
+
+  /// Empty state hint for My Replies
+  ///
+  /// In en, this message translates to:
+  /// **'Browse the board and respond to open requests.'**
+  String get browseBoardHint;
+
+  /// Empty state hint for Browse
+  ///
+  /// In en, this message translates to:
+  /// **'The board is quiet. Be the first to post.'**
+  String get boardQuietHint;
+
+  /// AppBar title of RequestDetailScreen
+  ///
+  /// In en, this message translates to:
+  /// **'Request'**
+  String get request;
+
+  /// Accept confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Accept this reply?'**
+  String get acceptThisReply;
+
+  /// Accept confirmation body
+  ///
+  /// In en, this message translates to:
+  /// **'The other person will be notified and a chat will open so you can finalize the deal.'**
+  String get acceptReplyBody;
+
+  /// Accept button label
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get accept;
+
+  /// Success snackbar after accepting a reply
+  ///
+  /// In en, this message translates to:
+  /// **'Reply accepted — starting chat 🎉'**
+  String get replyAcceptedSuccess;
+
+  /// Success snackbar after withdrawing reply
+  ///
+  /// In en, this message translates to:
+  /// **'Reply withdrawn'**
+  String get replyWithdrawn;
+
+  /// Primary CTA for non-author
+  ///
+  /// In en, this message translates to:
+  /// **'Respond to this request'**
+  String get respondToRequest;
+
+  /// Header above replies for author
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the best offer'**
+  String get pickBestOffer;
+
+  /// Reply count with plural
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No replies yet} =1{1 reply} other{{count} replies}}'**
+  String replyCount(int count);
+
+  /// Empty replies hint for author
+  ///
+  /// In en, this message translates to:
+  /// **'No replies yet. Matching sellers were notified — pull down to refresh.'**
+  String get noRepliesPullToRefresh;
+
+  /// Section label for own reply
+  ///
+  /// In en, this message translates to:
+  /// **'Your reply'**
+  String get yourReply;
+
+  /// Banner for closed request
+  ///
+  /// In en, this message translates to:
+  /// **'A reply was accepted — deal is in progress.'**
+  String get replyAcceptedBanner;
+
+  /// Button to withdraw own reply
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw my reply'**
+  String get withdrawMyReply;
+
+  /// Reply bottom sheet title
+  ///
+  /// In en, this message translates to:
+  /// **'Reply to request'**
+  String get replyToRequest;
+
+  /// Reply bottom sheet subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'The requester will be notified.'**
+  String get requesterWillBeNotified;
+
+  /// Product picker label
+  ///
+  /// In en, this message translates to:
+  /// **'Attach a product (optional)'**
+  String get attachProductOptional;
+
+  /// Hint when user has no available products
+  ///
+  /// In en, this message translates to:
+  /// **'No available products — reply will be message-only.'**
+  String get noAvailableProductsMessage;
+
+  /// Price field hint
+  ///
+  /// In en, this message translates to:
+  /// **'Ask price (ETB, optional)'**
+  String get askPriceOptional;
+
+  /// Message field hint in reply sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Write your message…'**
+  String get replyMessageHint;
+
+  /// Send button in reply sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Send reply'**
+  String get sendReply;
+
+  /// Generic loading
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get loading;
+
+  /// Label for attached product in a reply
+  ///
+  /// In en, this message translates to:
+  /// **'Offers: {title}'**
+  String offers(String title);
+
+  /// Success snackbar after replying
+  ///
+  /// In en, this message translates to:
+  /// **'Reply sent ✅'**
+  String get replySentSuccess;
+
+  /// Author byline
+  ///
+  /// In en, this message translates to:
+  /// **'by {name}'**
+  String postedBy(String name);
+
+  /// ETB amount label
+  ///
+  /// In en, this message translates to:
+  /// **'ETB {amount}'**
+  String etbAmount(String amount);
+
+  /// Budget range
+  ///
+  /// In en, this message translates to:
+  /// **'ETB {min} – {max}'**
+  String etbRange(String min, String max);
+
+  /// Minimum budget
+  ///
+  /// In en, this message translates to:
+  /// **'ETB {min}+'**
+  String etbMinPlus(String min);
+
+  /// Maximum budget
+  ///
+  /// In en, this message translates to:
+  /// **'up to ETB {max}'**
+  String etbUpTo(String max);
+
+  /// Request status OPEN
+  ///
+  /// In en, this message translates to:
+  /// **'OPEN'**
+  String get statusOpen;
+
+  /// Request status CLOSED
+  ///
+  /// In en, this message translates to:
+  /// **'CLOSED'**
+  String get statusClosed;
+
+  /// Request status FULFILLED
+  ///
+  /// In en, this message translates to:
+  /// **'FULFILLED'**
+  String get statusFulfilled;
+
+  /// Request status EXPIRED
+  ///
+  /// In en, this message translates to:
+  /// **'EXPIRED'**
+  String get statusExpired;
+
+  /// Request status CANCELLED
+  ///
+  /// In en, this message translates to:
+  /// **'CANCELLED'**
+  String get statusCancelled;
+
+  /// Reply status PENDING
+  ///
+  /// In en, this message translates to:
+  /// **'PENDING'**
+  String get replyPendingStatus;
+
+  /// Reply status ACCEPTED
+  ///
+  /// In en, this message translates to:
+  /// **'ACCEPTED'**
+  String get replyAcceptedStatus;
+
+  /// Reply status REJECTED
+  ///
+  /// In en, this message translates to:
+  /// **'REJECTED'**
+  String get replyRejectedStatus;
+
+  /// Reply status WITHDRAWN
+  ///
+  /// In en, this message translates to:
+  /// **'WITHDRAWN'**
+  String get replyWithdrawnStatus;
 }
 
 class _AppLocalizationsDelegate

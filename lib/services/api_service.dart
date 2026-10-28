@@ -125,7 +125,80 @@ class ApiService {
     } catch (_) {}
     return false;
   }
+  // ─────────────────────────── GENERIC HELPERS ───────────────────────────
 
+  Future<Map<String, dynamic>> get(
+    String path, {
+    Map<String, String>? query,
+    Duration timeout = const Duration(seconds: 20),
+  }) =>
+      _withRetry(() async {
+        final uri = Uri.parse('${AppConfig.apiBaseUrl}$path')
+            .replace(queryParameters: query);
+        final res = await http.get(uri, headers: _headers).timeout(timeout);
+        return _parse(res);
+      });
+
+  Future<List<dynamic>> getList(
+    String path, {
+    Map<String, String>? query,
+    Duration timeout = const Duration(seconds: 20),
+  }) =>
+      _withRetry(() async {
+        final uri = Uri.parse('${AppConfig.apiBaseUrl}$path')
+            .replace(queryParameters: query);
+        final res = await http.get(uri, headers: _headers).timeout(timeout);
+        return _parseList(res);
+      });
+
+  Future<Map<String, dynamic>> post(
+    String path, {
+    Map<String, dynamic>? body,
+    Duration timeout = const Duration(seconds: 30),
+  }) =>
+      _withRetry(() async {
+        final res = await http
+            .post(
+              Uri.parse('${AppConfig.apiBaseUrl}$path'),
+              headers: _headers,
+              body: jsonEncode(body ?? {}),
+            )
+            .timeout(timeout);
+        return _parse(res);
+      });
+
+  Future<Map<String, dynamic>> patch(
+    String path, {
+    Map<String, dynamic>? body,
+    Duration timeout = const Duration(seconds: 30),
+  }) =>
+      _withRetry(() async {
+        final res = await http
+            .patch(
+              Uri.parse('${AppConfig.apiBaseUrl}$path'),
+              headers: _headers,
+              body: jsonEncode(body ?? {}),
+            )
+            .timeout(timeout);
+        return _parse(res);
+      });
+
+  Future<Map<String, dynamic>> delete(
+    String path, {
+    Map<String, dynamic>? body,
+    Duration timeout = const Duration(seconds: 20),
+  }) =>
+      _withRetry(() async {
+        final req = http.Request(
+          'DELETE',
+          Uri.parse('${AppConfig.apiBaseUrl}$path'),
+        )..headers.addAll(_headers);
+        if (body != null) req.body = jsonEncode(body);
+
+        final streamed = await req.send().timeout(timeout);
+        final res = await http.Response.fromStream(streamed);
+        return _parse(res);
+      });
   // ─────────────────────────── AUTH ───────────────────────────
 
   /// Dev-only: uses password login with the seeded test account.

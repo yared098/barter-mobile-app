@@ -16,6 +16,8 @@ import '../widgets/error_view.dart';
 import '../widgets/loading_view.dart';
 import 'login_screen.dart';
 import 'post_product_screen.dart';
+import 'wanted_board_screen.dart';
+
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -155,6 +157,15 @@ class _HomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
           tooltip: t.chats,
           light: true,
         ),
+        IconButton(
+  icon: const Icon(Icons.assignment_outlined, color: Colors.white),
+  tooltip: 'Wanted board',
+  onPressed: () {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const WantedBoardScreen()),
+    );
+  },
+),
         const _OverflowMenu(),
         const SizedBox(width: 4),
       ],

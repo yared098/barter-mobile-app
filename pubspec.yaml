@@ -28,6 +28,8 @@ dependencies:
   cached_network_image: ^4.0.5
   google_sign_in: ^6.2.1
   flutter_dotenv: ^6.0.1
+  geolocator: ^13.0.2
+  geocoding: ^3.0.0
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.3

@@ -421,4 +421,301 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get categoryFallback => 'ምድብ';
+
+  @override
+  String get postARequest => 'ጥያቄ ይለጥፉ';
+
+  @override
+  String get whatDoYouNeed => 'ምን ይፈልጋሉ?';
+
+  @override
+  String get requestTitleHint => 'ለምሳሌ፡ iPhone 12፣ 40GB ማከማቻ፣ 6GB RAM';
+
+  @override
+  String get details => 'ዝርዝር';
+
+  @override
+  String get requestDescriptionHint => 'ሁኔታ፣ ቀለም፣ ተጨማሪ መስፈርቶች…';
+
+  @override
+  String get category => 'ምድብ';
+
+  @override
+  String get couldNotLoadCategories => 'ምድቦችን መጫን አልተቻለም';
+
+  @override
+  String get howWillYouPay => 'እንዴት ይክፈላሉ?';
+
+  @override
+  String get cash => 'ጥሬ ገንዘብ';
+
+  @override
+  String get barter => 'ልውውጥ';
+
+  @override
+  String get either => 'ሁለቱም';
+
+  @override
+  String get budgetEthOptional => 'በጀት (ብር፣ አማራጭ)';
+
+  @override
+  String get min => 'ዝቅተኛ';
+
+  @override
+  String get max => 'ከፍተኛ';
+
+  @override
+  String get specificationsOptional => 'ዝርዝር መረጃ (አማራጭ)';
+
+  @override
+  String get add => 'ጨምር';
+
+  @override
+  String get specKeyHint => 'ቁልፍ (ለምሳሌ፡ storage)';
+
+  @override
+  String get specValueHint => 'እሴት (ለምሳሌ፡ 40GB)';
+
+  @override
+  String get pickupLocationOptional => 'የመውሰጃ ቦታ (አማራጭ)';
+
+  @override
+  String get gettingYourLocation => 'ቦታዎን በማግኘት ላይ…';
+
+  @override
+  String get updateMyLocation => 'ቦታዬን አዘምን';
+
+  @override
+  String get useMyCurrentLocation => 'የአሁኑን ቦታዬን ተጠቀም';
+
+  @override
+  String gpsCaptured(String lat, String lng) {
+    return 'GPS ተይዟል · $lat፣ $lng';
+  }
+
+  @override
+  String get locationNameHint => 'ለምሳሌ፡ አዲስ አበባ፣ ቦሌ';
+
+  @override
+  String get locationEditHint =>
+      'መለያውን ለማስተካከል መስኩን ይንኩ — GPS መጋጠሚያዎች እንዳሉ ይቆያሉ።';
+
+  @override
+  String get locationAttachHint =>
+      'GPS ለማያያዝ ከላይ ያለውን ቁልፍ ይንኩ፣ ወይም ቦታ በእጅ ይተይቡ።';
+
+  @override
+  String get postRequest => 'ጥያቄ ይለጥፉ';
+
+  @override
+  String get titleTooShort => 'ርዕስ ቢያንስ 3 ፊደሎች መሆን አለበት';
+
+  @override
+  String get addDescriptionPrompt => 'እባክዎ አጭር መግለጫ ያክሉ';
+
+  @override
+  String get pickCategoryPrompt => 'ምድብ ይምረጡ';
+
+  @override
+  String get budgetRangeInvalid => 'ዝቅተኛ በጀት ከከፍተኛ በጀት መብለጥ አይችልም';
+
+  @override
+  String get requestPostedSuccess => 'ጥያቄው ተለጥፏል — ተመሳሳይ ሻጮች ተመልክተዋል ✅';
+
+  @override
+  String get turnOnLocation => 'እባክዎ የመሣሪያዎን ቦታ አገልግሎት ያብሩ፣ ከዚያ እንደገና ይሞክሩ።';
+
+  @override
+  String get locationPermissionDenied => 'የቦታ ፈቃድ ተከልክሏል።';
+
+  @override
+  String get locationPermissionBlocked =>
+      'የቦታ ፈቃድ ታግዷል። በመተግበሪያ ቅንብሮች ውስጥ ያብሩት።';
+
+  @override
+  String get locationCaptured => 'ቦታ ተይዟል 📍';
+
+  @override
+  String get locationServicesDisabled => 'የቦታ አገልግሎቶች ጠፍተዋል።';
+
+  @override
+  String get locationTimeout =>
+      'ቦታውን በሰዓቱ ማግኘት አልተቻለም። ክፍት ቦታ ይሂዱ እና እንደገና ይሞክሩ።';
+
+  @override
+  String get locationDeniedByUser => 'ፈቃድ ተከልክሏል። ቦታ አልተያዘም።';
+
+  @override
+  String locationError(String error) {
+    return 'የቦታ ስህተት: $error';
+  }
+
+  @override
+  String get wantedBoard => 'የፍላጎት ሰሌዳ';
+
+  @override
+  String get wantedBoardSubtitle => 'ሰዎች ምን እንደሚፈልጉ ይመልከቱ';
+
+  @override
+  String get browse => 'ያስሱ';
+
+  @override
+  String get myRequests => 'የእኔ ጥያቄዎች';
+
+  @override
+  String get myReplies => 'የእኔ ምላሾች';
+
+  @override
+  String get loadingRequests => 'ጥያቄዎችን በመጫን ላይ…';
+
+  @override
+  String get noRequestsYet => 'እስካሁን ጥያቄዎች የሉም';
+
+  @override
+  String get noRepliesYet => 'እስካሁን ምላሾች የሉም';
+
+  @override
+  String get nobodyAskingYet => 'እስካሁን ማንም አልጠየቀም';
+
+  @override
+  String get tapPostRequestHint => 'ሻጮች ምን እንደሚፈልጉ ለመንገር \"ጥያቄ ይለጥፉ\" ን ይንኩ።';
+
+  @override
+  String get browseBoardHint => 'ሰሌዳውን ያስሱ እና ለክፍት ጥያቄዎች ምላሽ ይስጡ።';
+
+  @override
+  String get boardQuietHint => 'ሰሌዳው ጸጥ ይላል። የመጀመሪያው ይሁኑ።';
+
+  @override
+  String get request => 'ጥያቄ';
+
+  @override
+  String get acceptThisReply => 'ይህን ምላሽ ይቀበሉ?';
+
+  @override
+  String get acceptReplyBody => 'ሌላኛው ሰው ይመለከታል እና ለመጨረሻ ለማድረግ ውይይት ይከፈታል።';
+
+  @override
+  String get accept => 'ተቀበል';
+
+  @override
+  String get replyAcceptedSuccess => 'ምላሽ ተቀብሏል — ውይይት በመክፈት ላይ 🎉';
+
+  @override
+  String get replyWithdrawn => 'ምላሽ ተሰርዟል';
+
+  @override
+  String get respondToRequest => 'ለዚህ ጥያቄ ምላሽ ይስጡ';
+
+  @override
+  String get pickBestOffer => 'ምርጥ ቅናሹን ይምረጡ';
+
+  @override
+  String replyCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ምላሾች',
+      one: '1 ምላሽ',
+      zero: 'እስካሁን ምላሾች የሉም',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noRepliesPullToRefresh =>
+      'እስካሁን ምላሾች የሉም። ተመሳሳይ ሻጮች ተመልክተዋል — ለማደስ ወደታች ይጎትቱ።';
+
+  @override
+  String get yourReply => 'የእርስዎ ምላሽ';
+
+  @override
+  String get replyAcceptedBanner => 'ምላሽ ተቀብሏል — ስምምነት በሂደት ላይ ነው።';
+
+  @override
+  String get withdrawMyReply => 'ምላሼን ሰርዝ';
+
+  @override
+  String get replyToRequest => 'ለጥያቄ ምላሽ ይስጡ';
+
+  @override
+  String get requesterWillBeNotified => 'ጠያቂው ይመለከታል።';
+
+  @override
+  String get attachProductOptional => 'ምርት ያያዙ (አማራጭ)';
+
+  @override
+  String get noAvailableProductsMessage => 'ያሉ ምርቶች የሉም — ምላሹ መልእክት ብቻ ይሆናል።';
+
+  @override
+  String get askPriceOptional => 'የሚጠይቁት ዋጋ (ብር፣ አማራጭ)';
+
+  @override
+  String get replyMessageHint => 'መልእክትዎን ይጻፉ…';
+
+  @override
+  String get sendReply => 'ምላሽ ላክ';
+
+  @override
+  String get loading => 'በመጫን ላይ…';
+
+  @override
+  String offers(String title) {
+    return 'ቅናሾች: $title';
+  }
+
+  @override
+  String get replySentSuccess => 'ምላሽ ተልኳል ✅';
+
+  @override
+  String postedBy(String name) {
+    return 'በ$name';
+  }
+
+  @override
+  String etbAmount(String amount) {
+    return 'ብር $amount';
+  }
+
+  @override
+  String etbRange(String min, String max) {
+    return 'ብር $min – $max';
+  }
+
+  @override
+  String etbMinPlus(String min) {
+    return 'ብር $min+';
+  }
+
+  @override
+  String etbUpTo(String max) {
+    return 'እስከ ብር $max';
+  }
+
+  @override
+  String get statusOpen => 'ክፍት';
+
+  @override
+  String get statusClosed => 'ተዘግቷል';
+
+  @override
+  String get statusFulfilled => 'ተጠናቅቋል';
+
+  @override
+  String get statusExpired => 'ጊዜው አልፎበታል';
+
+  @override
+  String get statusCancelled => 'ተሰርዟል';
+
+  @override
+  String get replyPendingStatus => 'በመጠባበቅ ላይ';
+
+  @override
+  String get replyAcceptedStatus => 'ተቀብሏል';
+
+  @override
+  String get replyRejectedStatus => 'ተከልክሏል';
+
+  @override
+  String get replyWithdrawnStatus => 'ተሰርዟል';
 }

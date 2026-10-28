@@ -62,6 +62,9 @@
 					</dict>
 				</array>
 			</dict>
+
+			<key>NSLocationWhenInUseUsageDescription</key>
+            <string>We use your location to show buyers near you and set where your request can be picked up.</string>
 		</dict>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>

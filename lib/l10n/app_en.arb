@@ -127,7 +127,8 @@
   "language": "Language",
   "english": "English",
   "amharic": "አማርኛ",
-    "declineOfferConfirmTitle": "Decline offer?",
+
+  "declineOfferConfirmTitle": "Decline offer?",
   "declineOfferConfirmMessage": "The offer will be closed and both products unlocked.",
   "acceptOfferConfirmTitle": "Accept offer?",
   "acceptOfferConfirmMessage": "Ownership of both products will transfer immediately. Meet the other person to physically exchange items.",
@@ -143,6 +144,7 @@
   },
 
   "someone": "Someone",
+  "@someone": { "description": "Fallback when name is missing" },
   "product": "Product",
   "loadingConversations": "Loading conversations...",
   "sender": "Sender",
@@ -163,7 +165,7 @@
   "@timeDays": {
     "placeholders": { "count": { "type": "int" } }
   },
-    "productTitle": "Product",
+  "productTitle": "Product",
   "matchPercentBadge": "{score}% match",
   "@matchPercentBadge": {
     "placeholders": { "score": { "type": "int" } }
@@ -181,5 +183,298 @@
   "@productUnavailable": {
     "placeholders": { "status": { "type": "String" } }
   },
-  "categoryFallback": "Category"
+  "categoryFallback": "Category",
+
+  "postARequest": "Post a request",
+  "@postARequest": { "description": "AppBar title of CreateRequestScreen" },
+
+  "whatDoYouNeed": "What do you need?",
+  "@whatDoYouNeed": { "description": "Section label for title field" },
+
+  "requestTitleHint": "e.g. iPhone 12, 40GB storage, 6GB RAM",
+  "@requestTitleHint": { "description": "Hint text for Create Request title field" },
+
+  "details": "Details",
+  "@details": { "description": "Section label for description" },
+
+  "requestDescriptionHint": "Condition, color, extra requirements…",
+  "@requestDescriptionHint": { "description": "Hint for Create Request description field" },
+
+  "category": "Category",
+  "@category": { "description": "Category section label" },
+
+  "couldNotLoadCategories": "Could not load categories",
+  "@couldNotLoadCategories": { "description": "Error when categories fail" },
+
+  "howWillYouPay": "How will you pay?",
+  "@howWillYouPay": { "description": "Payment type section label" },
+
+  "cash": "Cash",
+  "@cash": { "description": "Cash payment type" },
+
+  "barter": "Barter",
+  "@barter": { "description": "Barter payment type" },
+
+  "either": "Either",
+  "@either": { "description": "Either cash or barter" },
+
+  "budgetEthOptional": "Budget (ETB, optional)",
+  "@budgetEthOptional": { "description": "Budget section label" },
+
+  "min": "Min",
+  "@min": { "description": "Minimum label" },
+
+  "max": "Max",
+  "@max": { "description": "Maximum label" },
+
+  "specificationsOptional": "Specifications (optional)",
+  "@specificationsOptional": { "description": "Specifications section label" },
+
+  "add": "Add",
+  "@add": { "description": "Add button" },
+
+  "specKeyHint": "Key (e.g. storage)",
+  "@specKeyHint": { "description": "Spec key input hint" },
+
+  "specValueHint": "Value (e.g. 40GB)",
+  "@specValueHint": { "description": "Spec value input hint" },
+
+  "pickupLocationOptional": "Pickup location (optional)",
+  "@pickupLocationOptional": { "description": "Location section label" },
+
+  "gettingYourLocation": "Getting your location…",
+  "@gettingYourLocation": { "description": "Spinner message while GPS is fetching" },
+
+  "updateMyLocation": "Update my location",
+  "@updateMyLocation": { "description": "Location button when already captured" },
+
+  "useMyCurrentLocation": "Use my current location",
+  "@useMyCurrentLocation": { "description": "Location button before capture" },
+
+  "gpsCaptured": "GPS captured · {lat}, {lng}",
+  "@gpsCaptured": {
+    "description": "Chip showing captured coordinates",
+    "placeholders": {
+      "lat": { "type": "String" },
+      "lng": { "type": "String" }
+    }
+  },
+
+  "locationNameHint": "e.g. Addis Ababa, Bole",
+  "@locationNameHint": { "description": "Location name text field hint" },
+
+  "locationEditHint": "Tap the field to edit the text label — GPS coordinates stay attached.",
+  "@locationEditHint": { "description": "Hint shown under the location field when GPS is captured" },
+
+  "locationAttachHint": "Tap the button above to attach GPS, or type a location manually.",
+  "@locationAttachHint": { "description": "Hint shown under the location field when no GPS yet" },
+
+  "postRequest": "Post request",
+  "@postRequest": { "description": "Post request button and FAB label" },
+
+  "titleTooShort": "Title must be at least 3 characters",
+  "@titleTooShort": { "description": "Validation error snackbar" },
+
+  "addDescriptionPrompt": "Please add a short description",
+  "@addDescriptionPrompt": { "description": "Validation error snackbar" },
+
+  "pickCategoryPrompt": "Pick a category",
+  "@pickCategoryPrompt": { "description": "Validation error snackbar" },
+
+  "budgetRangeInvalid": "Min budget cannot exceed max budget",
+  "@budgetRangeInvalid": { "description": "Validation error snackbar" },
+
+  "requestPostedSuccess": "Request posted — matching sellers notified ✅",
+  "@requestPostedSuccess": { "description": "Success snackbar after posting a request" },
+
+  "turnOnLocation": "Please turn on your device location, then try again.",
+  "@turnOnLocation": { "description": "Location service disabled snackbar" },
+
+  "locationPermissionDenied": "Location permission denied.",
+  "@locationPermissionDenied": { "description": "Permission denied snackbar" },
+
+  "locationPermissionBlocked": "Location permission blocked. Enable it in app settings.",
+  "@locationPermissionBlocked": { "description": "Permission permanently denied snackbar" },
+
+  "locationCaptured": "Location captured 📍",
+  "@locationCaptured": { "description": "Success snackbar after GPS capture" },
+
+  "locationServicesDisabled": "Location services are disabled.",
+  "@locationServicesDisabled": { "description": "Geolocator exception snackbar" },
+
+  "locationTimeout": "Could not get location in time. Move to an open area and retry.",
+  "@locationTimeout": { "description": "GPS timeout snackbar" },
+
+  "locationDeniedByUser": "Permission denied. Location was not captured.",
+  "@locationDeniedByUser": { "description": "Permission exception snackbar" },
+
+  "locationError": "Location error: {error}",
+  "@locationError": {
+    "description": "Generic location error snackbar",
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "wantedBoard": "Wanted board",
+  "@wantedBoard": { "description": "Title of WantedBoardScreen" },
+
+  "wantedBoardSubtitle": "See what people are looking for",
+  "@wantedBoardSubtitle": { "description": "Subtitle of WantedBoardScreen" },
+
+  "browse": "Browse",
+  "@browse": { "description": "Browse tab label" },
+
+  "myRequests": "My Requests",
+  "@myRequests": { "description": "My Requests tab label" },
+
+  "myReplies": "My Replies",
+  "@myReplies": { "description": "My Replies tab label" },
+
+  "loadingRequests": "Loading requests…",
+  "@loadingRequests": { "description": "Loading message" },
+
+  "noRequestsYet": "No requests yet",
+  "@noRequestsYet": { "description": "Empty state title" },
+
+  "noRepliesYet": "No replies yet",
+  "@noRepliesYet": { "description": "Empty state title" },
+
+  "nobodyAskingYet": "Nobody is asking yet",
+  "@nobodyAskingYet": { "description": "Empty state title" },
+
+  "tapPostRequestHint": "Tap “Post request” to tell sellers what you need.",
+  "@tapPostRequestHint": { "description": "Empty state hint for My Requests" },
+
+  "browseBoardHint": "Browse the board and respond to open requests.",
+  "@browseBoardHint": { "description": "Empty state hint for My Replies" },
+
+  "boardQuietHint": "The board is quiet. Be the first to post.",
+  "@boardQuietHint": { "description": "Empty state hint for Browse" },
+
+  "request": "Request",
+  "@request": { "description": "AppBar title of RequestDetailScreen" },
+
+  "acceptThisReply": "Accept this reply?",
+  "@acceptThisReply": { "description": "Accept confirmation title" },
+
+  "acceptReplyBody": "The other person will be notified and a chat will open so you can finalize the deal.",
+  "@acceptReplyBody": { "description": "Accept confirmation body" },
+
+  "accept": "Accept",
+  "@accept": { "description": "Accept button label" },
+
+  "replyAcceptedSuccess": "Reply accepted — starting chat 🎉",
+  "@replyAcceptedSuccess": { "description": "Success snackbar after accepting a reply" },
+
+  "replyWithdrawn": "Reply withdrawn",
+  "@replyWithdrawn": { "description": "Success snackbar after withdrawing reply" },
+
+  "respondToRequest": "Respond to this request",
+  "@respondToRequest": { "description": "Primary CTA for non-author" },
+
+  "pickBestOffer": "Pick the best offer",
+  "@pickBestOffer": { "description": "Header above replies for author" },
+
+  "replyCount": "{count, plural, =0{No replies yet} =1{1 reply} other{{count} replies}}",
+  "@replyCount": {
+    "description": "Reply count with plural",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "noRepliesPullToRefresh": "No replies yet. Matching sellers were notified — pull down to refresh.",
+  "@noRepliesPullToRefresh": { "description": "Empty replies hint for author" },
+
+  "yourReply": "Your reply",
+  "@yourReply": { "description": "Section label for own reply" },
+
+  "replyAcceptedBanner": "A reply was accepted — deal is in progress.",
+  "@replyAcceptedBanner": { "description": "Banner for closed request" },
+
+  "withdrawMyReply": "Withdraw my reply",
+  "@withdrawMyReply": { "description": "Button to withdraw own reply" },
+
+  "replyToRequest": "Reply to request",
+  "@replyToRequest": { "description": "Reply bottom sheet title" },
+
+  "requesterWillBeNotified": "The requester will be notified.",
+  "@requesterWillBeNotified": { "description": "Reply bottom sheet subtitle" },
+
+  "attachProductOptional": "Attach a product (optional)",
+  "@attachProductOptional": { "description": "Product picker label" },
+
+  "noAvailableProductsMessage": "No available products — reply will be message-only.",
+  "@noAvailableProductsMessage": { "description": "Hint when user has no available products" },
+
+  "askPriceOptional": "Ask price (ETB, optional)",
+  "@askPriceOptional": { "description": "Price field hint" },
+
+  "replyMessageHint": "Write your message…",
+  "@replyMessageHint": { "description": "Message field hint in reply sheet" },
+
+  "sendReply": "Send reply",
+  "@sendReply": { "description": "Send button in reply sheet" },
+
+  "loading": "Loading…",
+  "@loading": { "description": "Generic loading" },
+
+  "offers": "Offers: {title}",
+  "@offers": {
+    "description": "Label for attached product in a reply",
+    "placeholders": { "title": { "type": "String" } }
+  },
+
+  "replySentSuccess": "Reply sent ✅",
+  "@replySentSuccess": { "description": "Success snackbar after replying" },
+
+  "postedBy": "by {name}",
+  "@postedBy": {
+    "description": "Author byline",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "etbAmount": "ETB {amount}",
+  "@etbAmount": {
+    "description": "ETB amount label",
+    "placeholders": { "amount": { "type": "String" } }
+  },
+
+  "etbRange": "ETB {min} – {max}",
+  "@etbRange": {
+    "description": "Budget range",
+    "placeholders": {
+      "min": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+
+  "etbMinPlus": "ETB {min}+",
+  "@etbMinPlus": {
+    "description": "Minimum budget",
+    "placeholders": { "min": { "type": "String" } }
+  },
+
+  "etbUpTo": "up to ETB {max}",
+  "@etbUpTo": {
+    "description": "Maximum budget",
+    "placeholders": { "max": { "type": "String" } }
+  },
+
+  "statusOpen": "OPEN",
+  "@statusOpen": { "description": "Request status OPEN" },
+  "statusClosed": "CLOSED",
+  "@statusClosed": { "description": "Request status CLOSED" },
+  "statusFulfilled": "FULFILLED",
+  "@statusFulfilled": { "description": "Request status FULFILLED" },
+  "statusExpired": "EXPIRED",
+  "@statusExpired": { "description": "Request status EXPIRED" },
+  "statusCancelled": "CANCELLED",
+  "@statusCancelled": { "description": "Request status CANCELLED" },
+
+  "replyPendingStatus": "PENDING",
+  "@replyPendingStatus": { "description": "Reply status PENDING" },
+  "replyAcceptedStatus": "ACCEPTED",
+  "@replyAcceptedStatus": { "description": "Reply status ACCEPTED" },
+  "replyRejectedStatus": "REJECTED",
+  "@replyRejectedStatus": { "description": "Reply status REJECTED" },
+  "replyWithdrawnStatus": "WITHDRAWN",
+  "@replyWithdrawnStatus": { "description": "Reply status WITHDRAWN" }
 }

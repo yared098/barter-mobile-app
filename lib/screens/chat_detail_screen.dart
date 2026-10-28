@@ -98,11 +98,12 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
 
       if (!mounted) return;
       final label = {
-        'accept': t.offerAccepted,
-        'decline': t.offerDeclined,
-        'cancel': t.offerCancelled,
-        'complete': t.swapCompleted,
-      }[action] ?? action;
+            'accept': t.offerAccepted,
+            'decline': t.offerDeclined,
+            'cancel': t.offerCancelled,
+            'complete': t.swapCompleted,
+          }[action] ??
+          action;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(label), backgroundColor: AppColors.primary),
       );
@@ -162,18 +163,28 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       }
     });
 
+    // Extract chat header info (for AppBar)
+    String otherName = t.chats;
+    String otherInitial = '?';
+    String status = 'PENDING';
+    async.whenData((offer) {
+      final isIncoming = offer['receiverId'] == currentUserId;
+      final other = isIncoming ? offer['sender'] : offer['receiver'];
+      final name = (other is Map ? other['name'] : null) as String?;
+      if (name != null && name.trim().isNotEmpty) {
+        otherName = name.trim();
+        otherInitial = otherName.characters.first.toUpperCase();
+      }
+      status = offer['status'] as String? ?? 'PENDING';
+    });
+
     return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: AppBar(
-        title: async.maybeWhen(
-          data: (offer) {
-            final isIncoming = offer['receiverId'] == currentUserId;
-            final other = isIncoming ? offer['sender'] : offer['receiver'];
-            final name = (other is Map ? other['name'] : null) as String?;
-            return Text(name ?? t.chats);
-          },
-          orElse: () => Text(t.chats),
-        ),
+      backgroundColor: const Color(0xFFF7F8F7), // very light neutral
+      appBar: _ChatAppBar(
+        title: otherName,
+        initial: otherInitial,
+        status: status,
+        t: t,
       ),
       body: async.when(
         loading: () => const LoadingView(),
@@ -201,7 +212,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         amISender ? offer['requestedProduct'] : offer['offeredProduct'];
 
     final messages = (offer['messages'] as List?) ?? [];
-    final chatClosed = ['COMPLETED', 'DECLINED', 'CANCELLED'].contains(status);
+    final chatClosed =
+        ['COMPLETED', 'DECLINED', 'CANCELLED'].contains(status);
 
     return Column(
       children: [
@@ -211,45 +223,71 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           status: status,
         ),
         _buildActions(status, amISender, amIReceiver, t),
-        const Divider(height: 1, color: AppColors.divider),
         Expanded(
           child: messages.isEmpty
               ? _emptyChat(t)
-              : ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  itemCount: messages.length,
-                  itemBuilder: (_, i) {
-                    final m = messages[i] as Map<String, dynamic>;
-                    final mine =
-                        m['senderId'] == currentUserId ||
-                        (m['sender'] is Map &&
-                            (m['sender'] as Map)['id'] == currentUserId);
-                    final senderName =
-                        (m['sender'] is Map
-                                ? (m['sender'] as Map)['name']
-                                : null) as String? ??
-                        t.someone;
-                    final content = m['content'] as String? ?? '';
-                    DateTime? time;
-                    final raw = m['createdAt'];
-                    if (raw is String) {
-                      try {
-                        time = DateTime.parse(raw).toLocal();
-                      } catch (_) {}
-                    }
-                    return _MessageBubble(
-                      content: content,
-                      mine: mine,
-                      senderName: senderName,
-                      time: time,
-                    );
-                  },
-                ),
+              : _buildMessageList(messages, currentUserId, t),
         ),
         if (!chatClosed) _buildInput(t),
         if (chatClosed) _closedNotice(status, t),
       ],
+    );
+  }
+
+  Widget _buildMessageList(
+    List messages,
+    String? currentUserId,
+    AppLocalizations t,
+  ) {
+    // Build items with optional date separators
+    final items = <Widget>[];
+    DateTime? previousDate;
+
+    for (var i = 0; i < messages.length; i++) {
+      final m = messages[i] as Map<String, dynamic>;
+
+      DateTime? dt;
+      final raw = m['createdAt'];
+      if (raw is String) {
+        try {
+          dt = DateTime.parse(raw).toLocal();
+        } catch (_) {}
+      }
+
+      // Date separator
+      if (dt != null) {
+        final dateOnly = DateTime(dt.year, dt.month, dt.day);
+        if (previousDate == null ||
+            !(previousDate.year == dateOnly.year &&
+                previousDate.month == dateOnly.month &&
+                previousDate.day == dateOnly.day)) {
+          items.add(_DateSeparator(date: dt, t: t));
+          previousDate = dateOnly;
+        }
+      }
+
+      final mine = m['senderId'] == currentUserId ||
+          (m['sender'] is Map &&
+              (m['sender'] as Map)['id'] == currentUserId);
+      final senderName =
+          (m['sender'] is Map ? (m['sender'] as Map)['name'] : null)
+                  as String? ??
+              t.someone;
+      final content = m['content'] as String? ?? '';
+
+      items.add(_MessageBubble(
+        content: content,
+        mine: mine,
+        senderName: senderName,
+        time: dt,
+      ));
+    }
+
+    return ListView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      itemCount: items.length,
+      itemBuilder: (_, i) => items[i],
     );
   }
 
@@ -275,85 +313,91 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       );
     }
 
-    if (status == 'PENDING') {
-      if (amIReceiver) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () async {
-                    final ok = await _confirmAction(
-                      t.declineOfferConfirmTitle,
-                      t.declineOfferConfirmMessage,
-                    );
-                    if (ok) _doAction('decline');
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.error,
-                    side: const BorderSide(color: AppColors.error),
-                    minimumSize: const Size.fromHeight(44),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+    if (status == 'PENDING' && amIReceiver) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () async {
+                  final ok = await _confirmAction(
+                    t.declineOfferConfirmTitle,
+                    t.declineOfferConfirmMessage,
+                  );
+                  if (ok) _doAction('decline');
+                },
+                icon: const Icon(Icons.close_rounded, size: 16),
+                label: Text(t.declineOffer),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.error,
+                  side: BorderSide(
+                    color: AppColors.error.withValues(alpha: 0.5),
+                    width: 1.2,
                   ),
-                  child: Text(t.declineOffer),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    final ok = await _confirmAction(
-                      t.acceptOfferConfirmTitle,
-                      t.acceptOfferConfirmMessage,
-                    );
-                    if (ok) _doAction('accept');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.white,
-                    minimumSize: const Size.fromHeight(44),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                  minimumSize: const Size.fromHeight(44),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(t.acceptOffer),
                 ),
-              ),
-            ],
-          ),
-        );
-      }
-      if (amISender) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: OutlinedButton(
-            onPressed: () async {
-              final ok = await _confirmAction(
-                t.cancelOfferConfirmTitle,
-                t.cancelOfferConfirmMessage,
-              );
-              if (ok) _doAction('cancel');
-            },
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.textMuted,
-              side: const BorderSide(color: AppColors.border),
-              minimumSize: const Size.fromHeight(44),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: Text(t.cancelOffer),
+            const SizedBox(width: 10),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final ok = await _confirmAction(
+                    t.acceptOfferConfirmTitle,
+                    t.acceptOfferConfirmMessage,
+                  );
+                  if (ok) _doAction('accept');
+                },
+                icon: const Icon(Icons.check_rounded, size: 16),
+                label: Text(t.acceptOffer),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.white,
+                  elevation: 0,
+                  minimumSize: const Size.fromHeight(44),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (status == 'PENDING' && amISender) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+        child: OutlinedButton.icon(
+          onPressed: () async {
+            final ok = await _confirmAction(
+              t.cancelOfferConfirmTitle,
+              t.cancelOfferConfirmMessage,
+            );
+            if (ok) _doAction('cancel');
+          },
+          icon: const Icon(Icons.close_rounded, size: 16),
+          label: Text(t.cancelOffer),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.textMuted,
+            side: const BorderSide(color: AppColors.border, width: 1.2),
+            minimumSize: const Size.fromHeight(44),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
-        );
-      }
+        ),
+      );
     }
 
     if (status == 'ACCEPTED') {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
         child: ElevatedButton.icon(
           onPressed: () async {
             final ok = await _confirmAction(
@@ -367,6 +411,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
             foregroundColor: AppColors.white,
+            elevation: 0,
             minimumSize: const Size.fromHeight(44),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -387,18 +432,23 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
                 color: AppColors.primaryLight,
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  width: 1.5,
+                ),
               ),
               child: const Icon(
                 Icons.chat_bubble_outline,
-                size: 40,
+                size: 34,
                 color: AppColors.primary,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
             Text(
               t.noMessagesYet,
               style: const TextStyle(
@@ -413,6 +463,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
               style: const TextStyle(
                 color: AppColors.textMuted,
                 fontSize: 13,
+                height: 1.4,
               ),
               textAlign: TextAlign.center,
             ),
@@ -430,48 +481,76 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         top: 8,
         bottom: 8 + MediaQuery.of(context).viewPadding.bottom,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.white,
-        border: Border(top: BorderSide(color: AppColors.divider)),
+        border: Border(
+          top: BorderSide(
+            color: AppColors.border.withValues(alpha: 0.6),
+          ),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
-            child: TextField(
-              controller: _msgCtrl,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (_) => _sendMessage(),
-              minLines: 1,
-              maxLines: 4,
-              decoration: InputDecoration(
-                hintText: t.writeMessage,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  width: 1,
+                ),
+              ),
+              child: TextField(
+                controller: _msgCtrl,
+                textInputAction: TextInputAction.send,
+                onSubmitted: (_) => _sendMessage(),
+                minLines: 1,
+                maxLines: 4,
+                style: const TextStyle(fontSize: 14.5, height: 1.35),
+                decoration: InputDecoration(
+                  hintText: t.replyMessageHint,
+                  hintStyle: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 14,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ),
           ),
           const SizedBox(width: 8),
-          IconButton(
-            onPressed: _sending ? null : _sendMessage,
-            style: IconButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.white,
-              padding: const EdgeInsets.all(12),
-              minimumSize: const Size(48, 48),
-            ),
-            icon: _sending
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.white,
+          GestureDetector(
+            onTap: _sending ? null : _sendMessage,
+            child: Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: _sending
+                    ? AppColors.primary.withValues(alpha: 0.6)
+                    : AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+              child: _sending
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.send_rounded,
+                      size: 20,
+                      color: Colors.white,
                     ),
-                  )
-                : const Icon(Icons.send, size: 20),
+            ),
           ),
         ],
       ),
@@ -484,20 +563,35 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       padding: EdgeInsets.only(
         left: 16,
         right: 16,
-        top: 12,
-        bottom: 12 + MediaQuery.of(context).viewPadding.bottom,
+        top: 14,
+        bottom: 14 + MediaQuery.of(context).viewPadding.bottom,
       ),
       color: AppColors.primaryLight,
-      child: Text(
-        status == 'COMPLETED'
-            ? t.chatClosedCompleted
-            : t.chatClosedOther(_statusLabel(status, t)),
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: AppColors.textMuted,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            status == 'COMPLETED'
+                ? Icons.check_circle_outline
+                : Icons.lock_outline,
+            size: 14,
+            color: AppColors.primary,
+          ),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              status == 'COMPLETED'
+                  ? t.chatClosedCompleted
+                  : t.chatClosedOther(_statusLabel(status, t)),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -521,7 +615,158 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
 }
 
 // ═══════════════════════════════════════════════════════
-//  Product pair header
+//  CHAT APP BAR — gradient + avatar + status subtitle
+// ═══════════════════════════════════════════════════════
+
+class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String title;
+  final String initial;
+  final String status;
+  final AppLocalizations t;
+
+  const _ChatAppBar({
+    required this.title,
+    required this.initial,
+    required this.status,
+    required this.t,
+  });
+
+  @override
+  Size get preferredSize => const Size.fromHeight(64);
+
+  @override
+  Widget build(BuildContext context) {
+    final darkPrimary =
+        Color.lerp(AppColors.primary, Colors.black, 0.18) ?? AppColors.primary;
+
+    return AppBar(
+      toolbarHeight: 64,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      foregroundColor: Colors.white,
+      iconTheme: const IconThemeData(color: Colors.white),
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.primary, darkPrimary],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.22),
+              blurRadius: 16,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+      ),
+      titleSpacing: 0,
+      title: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.20),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.35),
+                width: 1.2,
+              ),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              initial,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.2,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                _MiniStatusPill(status: status, t: t),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniStatusPill extends StatelessWidget {
+  final String status;
+  final AppLocalizations t;
+
+  const _MiniStatusPill({required this.status, required this.t});
+
+  @override
+  Widget build(BuildContext context) {
+    late String label;
+    switch (status) {
+      case 'PENDING':
+        label = t.pending;
+        break;
+      case 'ACCEPTED':
+        label = t.accepted;
+        break;
+      case 'COMPLETED':
+        label = t.completed;
+        break;
+      case 'DECLINED':
+        label = t.declined;
+        break;
+      case 'CANCELLED':
+        label = t.cancelled;
+        break;
+      default:
+        label = status;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1.5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.22),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 9.5,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.3,
+          height: 1.2,
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  PRODUCT PAIR HEADER — "you give → you get" card
 // ═══════════════════════════════════════════════════════
 
 class _ProductPairHeader extends StatelessWidget {
@@ -538,177 +783,236 @@ class _ProductPairHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
+    final primary = AppColors.primary;
+
+    final myImages =
+        (myProduct is Map ? myProduct['images'] : null) as List? ?? [];
     final theirImages =
         (theirProduct is Map ? theirProduct['images'] : null) as List? ?? [];
-    final theirFirstImage = theirImages.isNotEmpty ? theirImages.first : null;
-    final theirImageUrl =
-        theirFirstImage is String && theirFirstImage.trim().isNotEmpty
-            ? AppConfig.resolveImageUrl(theirFirstImage)
-            : null;
+
+    final myImageUrl = myImages.isNotEmpty
+        ? AppConfig.resolveImageUrl(myImages.first.toString())
+        : null;
+    final theirImageUrl = theirImages.isNotEmpty
+        ? AppConfig.resolveImageUrl(theirImages.first.toString())
+        : null;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      color: AppColors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _statusPill(status, t),
-              const SizedBox(width: 8),
-              Text(
-                t.barterDeal,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: AppColors.textMuted,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+      margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: primary.withValues(alpha: 0.10),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: primary.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              GestureDetector(
-                onTap: theirImageUrl != null
-                    ? () => showImageGallery(
-                          context,
-                          images: theirImages
-                              .whereType<String>()
-                              .map(AppConfig.resolveImageUrl)
-                              .toList(),
-                        )
-                    : null,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    color: AppColors.primaryLight,
-                    child: theirImageUrl != null
-                        ? Image.network(
-                            theirImageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(
-                              Icons.broken_image_outlined,
-                              color: AppColors.textMuted,
-                              size: 20,
-                            ),
-                          )
-                        : const Icon(
-                            Icons.inventory_2_outlined,
-                            color: AppColors.primary,
-                            size: 22,
-                          ),
-                  ),
-                ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // YOU GIVE
+          Expanded(
+            child: _ProductMini(
+              label: t.youGive,
+              title: (myProduct is Map ? myProduct['title'] : null) as String?,
+              imageUrl: myImageUrl,
+              allImages: myImages.whereType<String>().toList(),
+              t: t,
+            ),
+          ),
+          // Arrow
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: primary.withValues(alpha: 0.10),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      t.youGive,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textMuted,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    Text(
-                      (myProduct is Map ? myProduct['title'] : null)
-                              as String? ??
-                          t.product,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.text,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      t.youGet,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textMuted,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    Text(
-                      (theirProduct is Map ? theirProduct['title'] : null)
-                              as String? ??
-                          t.product,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
+              child: Icon(
+                Icons.swap_horiz_rounded,
+                size: 16,
+                color: primary,
               ),
-            ],
+            ),
+          ),
+          // YOU GET
+          Expanded(
+            child: _ProductMini(
+              label: t.youGet,
+              title:
+                  (theirProduct is Map ? theirProduct['title'] : null)
+                      as String?,
+              imageUrl: theirImageUrl,
+              allImages: theirImages.whereType<String>().toList(),
+              t: t,
+              highlight: true,
+            ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _statusPill(String status, AppLocalizations t) {
-    late Color color;
-    late String label;
+class _ProductMini extends StatelessWidget {
+  final String label;
+  final String? title;
+  final String? imageUrl;
+  final List<String> allImages;
+  final AppLocalizations t;
+  final bool highlight;
 
-    switch (status) {
-      case 'PENDING':
-        color = AppColors.primary;
-        label = t.pending;
-        break;
-      case 'ACCEPTED':
-        color = const Color(0xFF2E7D32);
-        label = t.accepted;
-        break;
-      case 'COMPLETED':
-        color = const Color(0xFF2E7D32);
-        label = t.completed;
-        break;
-      case 'DECLINED':
-        color = AppColors.error;
-        label = t.declined;
-        break;
-      case 'CANCELLED':
-        color = AppColors.textMuted;
-        label = t.cancelled;
-        break;
-      default:
-        color = AppColors.textMuted;
-        label = status;
+  const _ProductMini({
+    required this.label,
+    required this.title,
+    required this.imageUrl,
+    required this.allImages,
+    required this.t,
+    this.highlight = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = AppColors.primary;
+
+    return GestureDetector(
+      onTap: allImages.isEmpty
+          ? null
+          : () => showImageGallery(
+                context,
+                images: allImages.map(AppConfig.resolveImageUrl).toList(),
+              ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              width: 42,
+              height: 42,
+              color: primary.withValues(alpha: 0.08),
+              child: imageUrl != null
+                  ? Image.network(
+                      imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Icon(
+                        Icons.broken_image_outlined,
+                        color: AppColors.textMuted,
+                        size: 18,
+                      ),
+                    )
+                  : Icon(
+                      Icons.inventory_2_outlined,
+                      color: primary,
+                      size: 20,
+                    ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    color: primary.withValues(alpha: 0.75),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  title ?? t.product,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight:
+                        highlight ? FontWeight.w700 : FontWeight.w600,
+                    color: highlight ? primary : AppColors.text,
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  DATE SEPARATOR
+// ═══════════════════════════════════════════════════════
+
+class _DateSeparator extends StatelessWidget {
+  final DateTime date;
+  final AppLocalizations t;
+
+  const _DateSeparator({required this.date, required this.t});
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final d = DateTime(date.year, date.month, date.day);
+    String label;
+
+    final diff = today.difference(d).inDays;
+    if (diff == 0) {
+      label = t.timeNow;
+    } else if (diff == 1) {
+      label = '${t.timeDays(1)}';
+    } else if (diff < 7) {
+      label = t.timeDays(diff);
+    } else {
+      label = '${date.day}/${date.month}/${date.year}';
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: color,
-          letterSpacing: 0.3,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Center(
+        child: Container(
+          padding:
+              const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.border,
+              width: 0.8,
+            ),
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textMuted,
+              letterSpacing: 0.2,
+            ),
+          ),
         ),
       ),
     );
   }
 }
+
+// ═══════════════════════════════════════════════════════
+//  MESSAGE BUBBLE — tails + timestamps inside
+// ═══════════════════════════════════════════════════════
 
 class _MessageBubble extends StatelessWidget {
   final String content;
@@ -730,30 +1034,52 @@ class _MessageBubble extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
+          maxWidth: MediaQuery.of(context).size.width * 0.76,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
         decoration: BoxDecoration(
-          color: mine ? AppColors.primary : AppColors.primaryLight,
+          color: mine ? AppColors.primary : AppColors.white,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
             bottomLeft: Radius.circular(mine ? 16 : 4),
             bottomRight: Radius.circular(mine ? 4 : 16),
           ),
+          border: mine
+              ? null
+              : Border.all(
+                  color: AppColors.border.withValues(alpha: 0.8),
+                  width: 1,
+                ),
+          boxShadow: mine
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!mine)
               Padding(
-                padding: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.only(bottom: 3),
                 child: Text(
                   senderName,
                   style: const TextStyle(
-                    fontSize: 11,
+                    fontSize: 10.5,
                     fontWeight: FontWeight.w700,
                     color: AppColors.primary,
+                    letterSpacing: 0.1,
                   ),
                 ),
               ),
@@ -761,26 +1087,44 @@ class _MessageBubble extends StatelessWidget {
               content,
               style: TextStyle(
                 fontSize: 14,
-                height: 1.4,
+                height: 1.35,
                 color: mine ? AppColors.white : AppColors.text,
               ),
             ),
             if (time != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  '${time!.hour.toString().padLeft(2, '0')}:${time!.minute.toString().padLeft(2, '0')}',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: mine
-                        ? AppColors.white.withValues(alpha: 0.75)
-                        : AppColors.textMuted,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _formatTime(time!),
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w500,
+                        color: mine
+                            ? AppColors.white.withValues(alpha: 0.75)
+                            : AppColors.textMuted,
+                      ),
+                    ),
+                    if (mine) ...[
+                      const SizedBox(width: 3),
+                      Icon(
+                        Icons.done_all_rounded,
+                        size: 11,
+                        color: AppColors.white.withValues(alpha: 0.85),
+                      ),
+                    ],
+                  ],
                 ),
               ),
           ],
         ),
       ),
     );
+  }
+
+  String _formatTime(DateTime dt) {
+    return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 }
