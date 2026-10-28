@@ -358,7 +358,7 @@ class ApiService {
     );
     req.headers['Authorization'] = 'Bearer $_accessToken';
 
-    // ⚠️ Explicit MIME — without this, Flutter sends octet-stream
+    //  Explicit MIME — without this, Flutter sends octet-stream
     final mimeType = _mimeTypeForPath(file.path);
 
     req.files.add(

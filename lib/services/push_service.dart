@@ -80,7 +80,7 @@ class PushService {
   Future<void> _initLocalNotifications() async {
     if (_localNotifReady) return;
 
-    // ⚠️ BARE resource name — no @drawable/ prefix
+    //  BARE resource name — no @drawable/ prefix
     const android = AndroidInitializationSettings('ic_notification');
 
     // iOS permission is already requested via FCM above
@@ -132,7 +132,7 @@ class PushService {
 
     debugPrint('[Push] Foreground: ${notif.title}');
 
-    // ⚠️ BARE resource names — no @drawable/ or @mipmap/ prefix
+    //  BARE resource names — no @drawable/ or @mipmap/ prefix
     final androidDetails = AndroidNotificationDetails(
       'barter_notifications',
       'Barter Notifications',
@@ -140,7 +140,7 @@ class PushService {
       importance: Importance.high,
       priority: Priority.high,
       icon: 'ic_notification',
-      largeIcon: const DrawableResourceAndroidBitmap('ic_launcher'),
+      largeIcon: const DrawableResourceAndroidBitmap('ic_notification'),
       styleInformation: BigTextStyleInformation(
         notif.body ?? '',
         contentTitle: notif.title,
