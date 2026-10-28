@@ -1,179 +1,305 @@
-import 'dart:ui';
+import 'package:barter_ethio/l10n/app_localizations.dart';
+import 'package:barter_ethio/providers/offers_provider.dart';
+import 'package:barter_ethio/screens/chats_screen.dart';
+import 'package:barter_ethio/screens/product_detail_screen.dart';
+import 'package:barter_ethio/widgets/image_gallery.dart';
+import 'package:barter_ethio/widgets/network_product_image.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../widgets/match_card.dart';
+import '../widgets/upgrade_prompt_sheet.dart';
 import '../config.dart';
+import '../providers/auth_provider.dart';
+import '../providers/matches_provider.dart';
+import '../providers/products_provider.dart';
 import '../theme.dart';
+import '../widgets/empty_view.dart';
+import '../widgets/error_view.dart';
+import '../widgets/loading_view.dart';
+import 'login_screen.dart';
+import 'post_product_screen.dart';
 
-/// A locked "teaser" match card for FREE users.
-/// Shows blurred image + rounded score + category — no title, no owner.
-class TeaserMatchCard extends StatelessWidget {
-  final Map<String, dynamic> teaser;
-  final VoidCallback onTap;
+class HomeScreen extends ConsumerWidget {
+  const HomeScreen({super.key});
 
-  const TeaserMatchCard({
-    super.key,
-    required this.teaser,
-    required this.onTap,
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = AppLocalizations.of(context)!;
+    final matchesAsync = ref.watch(matchesProvider);
+
+    return Scaffold(
+      backgroundColor: AppColors.white,
+      appBar: _HomeAppBar(
+        onOpenChats: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const ChatsScreen()),
+          );
+        },
+      ),
+      body: matchesAsync.when(
+        skipLoadingOnRefresh: true,
+        loading: () => LoadingView(message: t.findingMatches),
+        error: (e, _) => ErrorView(
+          message: e.toString().replaceFirst('Exception: ', ''),
+          onRetry: () => ref.invalidate(matchesProvider),
+        ),
+        data: (data) => _MatchesList(
+          data: data,
+          onRefresh: () async {
+            ref.invalidate(incomingOffersProvider);
+            ref.invalidate(outgoingOffersProvider);
+            await ref.refresh(matchesProvider.future);
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// ─── (unchanged) AppBar / avatar / pro badge / overflow / chats icon ───
+// Copy the existing _HomeAppBar, _PostActionButton, _AppBarPillButton,
+// _Avatar, _ProBadge, _OverflowMenu, _ChatsIconButton from your current
+// file — nothing there needs to change.
+// ... [keep them exactly as-is] ...
+
+// ═══════════════════════════════════════════════════════
+//  MATCHES LIST  → now uses the unified MatchCard
+// ═══════════════════════════════════════════════════════
+
+class _MatchesList extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final Future<void> Function() onRefresh;
+
+  const _MatchesList({required this.data, required this.onRefresh});
+
+  String _conditionLabel(String? condition, AppLocalizations t) {
+    switch (condition) {
+      case 'NEW':
+        return t.conditionNew;
+      case 'LIKE_NEW':
+        return t.conditionLikeNew;
+      case 'GOOD':
+        return t.conditionGood;
+      case 'FAIR':
+        return t.conditionFair;
+      default:
+        return condition?.replaceAll('_', ' ') ?? '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final matches = (data['matches'] as List?) ?? [];
+    final teasers = (data['teaserMatches'] as List?) ?? [];
+    final total = data['totalCount'] ?? 0;
+    final hidden = data['hiddenCount'] ?? 0;
+    final tier = (data['tier'] as String?) ?? 'FREE';
+    final isFree = tier == 'FREE';
+
+    if (matches.isEmpty) {
+      return EmptyView(
+        icon: Icons.explore_outlined,
+        title: t.noMatchesYet,
+        message: t.noMatchesMessage,
+      );
+    }
+
+    final openUpgrade = () => showUpgradePromptSheet(
+          context,
+          hiddenCount: hidden,
+          totalCount: total,
+        );
+
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: onRefresh,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
+        children: [
+          // Compact header (unchanged)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLight,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    isFree
+                        ? '${matches.length} of $total'
+                        : t.matchesCount(total),
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11.5,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                if (isFree && hidden > 0)
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: openUpgrade,
+                      borderRadius: BorderRadius.circular(20),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        child: Row(
+                          children: const [
+                            Icon(
+                              Icons.workspace_premium,
+                              size: 13,
+                              color: AppColors.primary,
+                            ),
+                            SizedBox(width: 3),
+                            Text(
+                              'Upgrade',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+
+          // ─── VISIBLE MATCHES ───
+          ...matches.map((m) {
+            final match = m as Map<String, dynamic>;
+            final p = match['product'] as Map<String, dynamic>;
+            final score = (match['score'] as num).toInt();
+            final reasons =
+                (match['reasons'] as List?)?.cast<String>() ?? [];
+
+            final cardData = MatchCardData.fromMatch(
+              match,
+              conditionLabel: (raw) => _conditionLabel(raw, t),
+              fromPerson: t.fromPerson,
+            );
+
+            return MatchCard(
+              data: cardData,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => ProductDetailScreen(
+                      productId: p['id'] as String,
+                      matchScore: score,
+                      matchReasons: reasons,
+                    ),
+                  ),
+                );
+              },
+              onImageTap: cardData.imageUrl != null
+                  ? () => showImageGallery(
+                        context,
+                        images: cardData.allImages,
+                        initialIndex: 0,
+                      )
+                  : null,
+            );
+          }),
+
+          // ─── TEASER SECTION ───
+          if (isFree && teasers.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            _TeaserSection(
+              teasers: teasers.cast<Map<String, dynamic>>(),
+              hidden: hidden,
+              onOpenUpgrade: openUpgrade,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  TEASER SECTION  → now uses the unified MatchCard(locked: true)
+// ═══════════════════════════════════════════════════════
+
+class _TeaserSection extends StatelessWidget {
+  final List<Map<String, dynamic>> teasers;
+  final int hidden;
+  final VoidCallback onOpenUpgrade;
+
+  const _TeaserSection({
+    required this.teasers,
+    required this.hidden,
+    required this.onOpenUpgrade,
   });
 
   @override
   Widget build(BuildContext context) {
-    final rawImage = teaser['image'] as String?;
-    final imageUrl = rawImage != null && rawImage.trim().isNotEmpty
-        ? AppConfig.resolveImageUrl(rawImage)
-        : null;
-
-    final score = (teaser['score'] as num?)?.toInt() ?? 0;
-    final categoryName = teaser['categoryName'] as String?;
-    final categoryIcon = teaser['categoryIcon'] as String?;
-    final value = (teaser['estimatedValue'] as num?)?.toInt();
-
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 14),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.25),
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Blurred image + lock overlay
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: SizedBox(
-                width: 88,
-                height: 88,
-                child: Stack(
-                  fit: StackFit.expand,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (imageUrl != null)
-                      ImageFiltered(
-                        imageFilter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                        child: Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              Container(color: AppColors.primaryLight),
-                        ),
-                      )
-                    else
-                      Container(color: AppColors.primaryLight),
-                    Container(
-                      color: Colors.black.withValues(alpha: 0.25),
-                      child: const Center(
-                        child: Icon(
-                          Icons.lock_outline,
-                          color: Colors.white,
-                          size: 28,
-                        ),
+                    const Icon(
+                      Icons.lock,
+                      size: 11,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$hidden locked match${hidden == 1 ? '' : 'es'}',
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                        letterSpacing: 0.1,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-
-            // Redacted text column
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: 16,
-                          margin: const EdgeInsets.only(right: 40),
-                          decoration: BoxDecoration(
-                            color: AppColors.border,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          '$score%',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Container(
-                    height: 12,
-                    width: 140,
-                    decoration: BoxDecoration(
-                      color: AppColors.border,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      if (categoryName != null) ...[
-                        Text(
-                          '${categoryIcon ?? ''} $categoryName'.trim(),
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textMuted,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      if (value != null)
-                        Text(
-                          '~ETB $value',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textMuted,
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: const [
-                      Icon(Icons.lock, size: 12, color: AppColors.primary),
-                      SizedBox(width: 4),
-                      Text(
-                        'Upgrade to unlock',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      Spacer(),
-                      Icon(Icons.chevron_right,
-                          size: 16, color: AppColors.primary),
-                    ],
-                  ),
-                ],
+              const SizedBox(width: 8),
+              Expanded(
+                child: Container(height: 1, color: AppColors.border),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
+
+        // Locked cards — one line each
+        ...teasers.map(
+          (teaser) => MatchCard(
+            locked: true,
+            data: MatchCardData.fromTeaser(teaser),
+            onTap: onOpenUpgrade,
+          ),
+        ),
+      ],
     );
   }
 }

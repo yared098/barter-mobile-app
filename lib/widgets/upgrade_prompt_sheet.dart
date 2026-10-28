@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import '../theme.dart';
 
+/// Why the upgrade sheet is being shown — changes the copy.
+enum UpgradeReason { matches, products }
+
 Future<void> showUpgradePromptSheet(
   BuildContext context, {
-  required int hiddenCount,
-  required int totalCount,
+  int hiddenCount = 0,
+  int totalCount = 0,
+  UpgradeReason reason = UpgradeReason.matches,
 }) {
   return showModalBottomSheet(
     context: context,
@@ -13,6 +17,7 @@ Future<void> showUpgradePromptSheet(
     builder: (_) => _UpgradeSheet(
       hiddenCount: hiddenCount,
       totalCount: totalCount,
+      reason: reason,
     ),
   );
 }
@@ -20,11 +25,41 @@ Future<void> showUpgradePromptSheet(
 class _UpgradeSheet extends StatelessWidget {
   final int hiddenCount;
   final int totalCount;
+  final UpgradeReason reason;
 
   const _UpgradeSheet({
     required this.hiddenCount,
     required this.totalCount,
+    required this.reason,
   });
+
+  bool get isProducts => reason == UpgradeReason.products;
+
+  String get _title => isProducts ? 'Unlock unlimited posts' : 'Unlock all matches';
+
+  String get _subtitle {
+    if (isProducts) {
+      return 'You\'ve used your 1 free listing.\n'
+          'Upgrade to PRO to post unlimited products and unlock every match.';
+    }
+    return 'You\'re seeing 3 of $totalCount matches.\n'
+        'Upgrade to PRO to unlock $hiddenCount more.';
+  }
+
+  IconData get _icon =>
+      isProducts ? Icons.inventory_2_outlined : Icons.visibility_outlined;
+
+  List<(IconData, String)> get _benefits => isProducts
+      ? const [
+          (Icons.add_circle_outline, 'Post unlimited products (FREE = 1)'),
+          (Icons.visibility_outlined, 'See every barter match'),
+          (Icons.bolt, 'Priority ranking in other users\' matches'),
+        ]
+      : const [
+          (Icons.visibility_outlined, 'See every barter match'),
+          (Icons.add_circle_outline, 'Post unlimited products (FREE = 1)'),
+          (Icons.bolt, 'Priority ranking in other users\' matches'),
+        ];
 
   @override
   Widget build(BuildContext context) {
@@ -58,16 +93,16 @@ class _UpgradeSheet extends StatelessWidget {
               color: AppColors.primaryLight,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.workspace_premium,
               color: AppColors.primary,
               size: 40,
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Unlock all matches',
-            style: TextStyle(
+          Text(
+            _title,
+            style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
               color: AppColors.text,
@@ -77,8 +112,7 @@ class _UpgradeSheet extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'You\'re seeing 3 of $totalCount matches.\n'
-            'Upgrade to PRO to unlock $hiddenCount more.',
+            _subtitle,
             style: const TextStyle(
               fontSize: 14,
               color: AppColors.textMuted,
@@ -93,23 +127,38 @@ class _UpgradeSheet extends StatelessWidget {
               color: AppColors.primaryLight,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Column(
-              children: [
-                _BenefitRow(
-                  icon: Icons.visibility_outlined,
-                  text: 'See every barter match — no more blurred cards',
-                ),
-                SizedBox(height: 12),
-                _BenefitRow(
-                  icon: Icons.add_circle_outline,
-                  text: 'Post unlimited products (FREE is limited to 1)',
-                ),
-                SizedBox(height: 12),
-                _BenefitRow(
-                  icon: Icons.priority_high,
-                  text: 'Priority ranking in other users\' matches',
-                ),
-              ],
+            child: Column(
+              children: _benefits
+                  .map(
+                    (b) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 1),
+                            child: Icon(
+                              b.$1,
+                              color: AppColors.primary,
+                              size: 18,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              b.$2,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.text,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                  .toList(),
             ),
           ),
           const SizedBox(height: 24),
@@ -155,37 +204,6 @@ class _UpgradeSheet extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _BenefitRow extends StatelessWidget {
-  final IconData icon;
-  final String text;
-
-  const _BenefitRow({required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 1),
-          child: Icon(icon, color: AppColors.primary, size: 18),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.text,
-              height: 1.4,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
