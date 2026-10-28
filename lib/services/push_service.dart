@@ -71,7 +71,7 @@ class PushService {
         await _registerWithBackend(newToken);
       });
 
-      debugPrint('[Push] ✅ Service initialized ($_platform)');
+      debugPrint('[Push]  Service initialized ($_platform)');
     } catch (e, st) {
       debugPrint('[Push] Init failed: $e\n$st');
     }
@@ -199,7 +199,7 @@ class PushService {
     if (!ApiService().isLoggedIn) return;
     try {
       await ApiService().registerDeviceToken(token, platform: _platform);
-      debugPrint('[Push] ✅ Token saved to backend ($_platform)');
+      debugPrint('[Push]  Token saved to backend ($_platform)');
     } catch (e) {
       debugPrint('[Push] Register failed: $e');
     }

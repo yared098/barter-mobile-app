@@ -47,45 +47,45 @@ The mobile app is a thin client — all business logic lives in the NestJS backe
 ## Features
 
 ### Authentication
-- ✅ Email login (backend OTP-ready)
-- ✅ Password login (for testing with seeded users)
-- ✅ Session persistence via SharedPreferences
-- ✅ Auto-refresh of access tokens on 401
-- ✅ Auto-logout on token expiry
+-  Email login (backend OTP-ready)
+-  Password login (for testing with seeded users)
+-  Session persistence via SharedPreferences
+-  Auto-refresh of access tokens on 401
+-  Auto-logout on token expiry
 
 ### Products
-- ✅ Post product with image (camera or gallery)
-- ✅ Category selection ("What is this?")
-- ✅ Multi-category wants ("What do you want?")
-- ✅ Condition, estimated value
-- ✅ List "my products" with delete
+-  Post product with image (camera or gallery)
+-  Category selection ("What is this?")
+-  Multi-category wants ("What do you want?")
+-  Condition, estimated value
+-  List "my products" with delete
 
 ### Matches
-- ✅ Ranked match feed with score badge
-- ✅ Human-readable match reasons ("They also want what you have")
-- ✅ Empty state with helpful tips
-- ✅ Pull-to-refresh
+-  Ranked match feed with score badge
+-  Human-readable match reasons ("They also want what you have")
+-  Empty state with helpful tips
+-  Pull-to-refresh
 
 ### Offers
-- ✅ Send offer from any match
-- ✅ Incoming / Outgoing tabs
-- ✅ Chat inside offers
-- ✅ Accept, decline, cancel, complete actions
-- ✅ Real-time status updates
+-  Send offer from any match
+-  Incoming / Outgoing tabs
+-  Chat inside offers
+-  Accept, decline, cancel, complete actions
+-  Real-time status updates
 
 ### Push Notifications
-- ✅ FCM integration (Android + iOS)
-- ✅ Notification for every business event (offer, accept, decline, message, swap complete)
-- ✅ Deep link to offer on tap
-- ✅ Local notification for foreground events
-- ✅ Custom logo icon + green accent color
+-  FCM integration (Android + iOS)
+-  Notification for every business event (offer, accept, decline, message, swap complete)
+-  Deep link to offer on tap
+-  Local notification for foreground events
+-  Custom logo icon + green accent color
 
 ### Design
-- ✅ Green/white theme only
-- ✅ Material 3 with custom design tokens
-- ✅ Consistent 14–16px border radius
-- ✅ Reusable widgets (InputField, PrimaryButton, CategoryChip, ScoreBadge)
-- ✅ Loading / error / empty states everywhere
+-  Green/white theme only
+-  Material 3 with custom design tokens
+-  Consistent 14–16px border radius
+-  Reusable widgets (InputField, PrimaryButton, CategoryChip, ScoreBadge)
+-  Loading / error / empty states everywhere
 
 ---
 

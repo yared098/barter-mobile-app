@@ -19,7 +19,7 @@ Future<void> main() async {
   // ─── 1. Load .env ───
   try {
     await dotenv.load(fileName: '.env');
-    debugPrint('[Env] ✅ Loaded — API: ${AppConfig.apiBaseUrl}');
+    debugPrint('[Env]  Loaded — API: ${AppConfig.apiBaseUrl}');
   } catch (e) {
     debugPrint('[Env] ❌ Failed to load .env: $e');
   }
@@ -29,7 +29,7 @@ Future<void> main() async {
   try {
     final prefs = await SharedPreferences.getInstance();
     initialLocale = prefs.getString('locale') ?? 'en';
-    debugPrint('[Locale] ✅ Loaded: $initialLocale');
+    debugPrint('[Locale]  Loaded: $initialLocale');
   } catch (e) {
     debugPrint('[Locale] ❌ Failed to load: $e');
   }
@@ -39,7 +39,7 @@ Future<void> main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    debugPrint('[Firebase] ✅ Initialized');
+    debugPrint('[Firebase]  Initialized');
   } catch (e) {
     debugPrint('[Firebase] ❌ Init failed: $e');
   }

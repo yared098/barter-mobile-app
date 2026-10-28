@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';   //  provides PaintingBinding
 
 import 'package:barter_ethio/services/google_auth_service.dart';
 import 'package:http/http.dart' as http;
@@ -163,19 +164,47 @@ class ApiService {
     return _parse(res);
   });
 
-  Future<void> logout() async {
-    try {
-      await http.post(
-        Uri.parse('${AppConfig.apiBaseUrl}/auth/logout'),
-        headers: _headers,
-      );
-    } catch (_) {}
-    _accessToken = null;
-    _refreshToken = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    // await GoogleAuthService().signOut();
+ Future<void> logout() async {
+  // 1. Best-effort server-side logout (never block on failure)
+  try {
+    await http
+        .post(
+          Uri.parse('${AppConfig.apiBaseUrl}/auth/logout'),
+          headers: _headers,
+        )
+        .timeout(const Duration(seconds: 3));
+  } catch (_) {
+    // network failure → still wipe locally
   }
+
+  // 2. Nuke everything locally
+  await clearAllLocalData();
+}
+
+/// Wipes every trace of the current session from the device:
+///   • in-memory tokens
+///   • SharedPreferences (all keys, not just tokens)
+///   • Google sign-in session
+///   • Flutter image cache (so old product photos don't flash after re-login)
+Future<void> clearAllLocalData() async {
+  _accessToken = null;
+  _refreshToken = null;
+
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.clear(); //  removes tokens + anything else you persisted
+
+  // Google — was commented out before
+  try {
+    await GoogleAuthService().signOut();
+  } catch (_) {}
+
+  // Flutter image cache (requires flutter/painting.dart which is
+  // already available via material/widgets in the app entry point)
+  try {
+    PaintingBinding.instance.imageCache.clear();
+    PaintingBinding.instance.imageCache.clearLiveImages();
+  } catch (_) {}
+}
 
   Future<Map<String, dynamic>> loginWithGoogleCode(
     String code,
