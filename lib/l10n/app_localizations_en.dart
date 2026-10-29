@@ -729,4 +729,127 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get replyWithdrawnStatus => 'WITHDRAWN';
+
+  @override
+  String get premiumUpgradeTitle => 'Upgrade your plan';
+
+  @override
+  String get premiumPickSubtitle =>
+      'Pick the plan that fits your posting needs.';
+
+  @override
+  String get premiumSectionDaily => 'Quick top-up';
+
+  @override
+  String get premiumSectionCredits => 'Post packs';
+
+  @override
+  String get premiumSectionPro => 'PRO membership';
+
+  @override
+  String get premiumMaybeLater => 'Maybe later';
+
+  @override
+  String get premiumFallbackBanner =>
+      'Showing default prices — connect to refresh.';
+
+  @override
+  String get planDailyPass => 'Daily Pass';
+
+  @override
+  String get planDailyPassDesc => '10 posts today · expires at midnight';
+
+  @override
+  String get planCredit100 => '100 Posts';
+
+  @override
+  String get planCredit100Desc => 'never expires · max 2/day';
+
+  @override
+  String get planCredit500 => '500 Posts';
+
+  @override
+  String get planCredit500Desc => 'never expires · max 2/day';
+
+  @override
+  String get planCredit1000 => '1000 Posts';
+
+  @override
+  String get planCredit1000Desc => 'never expires · max 2/day';
+
+  @override
+  String get planMonthlyPro => 'PRO · 30 days';
+
+  @override
+  String get planMonthlyProDesc => '60 posts · max 2/day';
+
+  @override
+  String get planYearlyPro => 'PRO · 1 year';
+
+  @override
+  String get planYearlyProDesc => '720 posts · max 2/day';
+
+  @override
+  String get badgeSave20 => 'SAVE 20%';
+
+  @override
+  String get badgeSave16 => 'SAVE 16%';
+
+  @override
+  String get badgeBestValue => 'BEST VALUE';
+
+  @override
+  String get premiumCompletePayment => 'Complete your payment';
+
+  @override
+  String get premiumUpdatesAutomatically =>
+      'This screen updates automatically once paid.';
+
+  @override
+  String get premiumScanWith => 'Scan with Telebirr, CBE, or Chapa';
+
+  @override
+  String get premiumOpenCheckout => 'Open Chapa checkout';
+
+  @override
+  String get premiumCopyLink => 'Copy payment link';
+
+  @override
+  String get premiumLinkCopied => 'Payment link copied';
+
+  @override
+  String get premiumWaiting => 'Waiting for payment…';
+
+  @override
+  String get premiumStep1 => 'Open Telebirr or Chapa on another phone';
+
+  @override
+  String get premiumStep2 => 'Scan the QR above, or tap Open checkout';
+
+  @override
+  String get premiumStep3 => 'Confirm payment — this screen updates itself';
+
+  @override
+  String get premiumPaidTitle => 'Payment confirmed!';
+
+  @override
+  String get premiumPaidSubtitle => 'Your plan is now active on your account.';
+
+  @override
+  String get premiumFailedTitle => 'Payment failed';
+
+  @override
+  String get premiumExpiredTitle => 'QR expired';
+
+  @override
+  String get premiumWindowExpired => 'The payment window has expired.';
+
+  @override
+  String get premiumTryAgain => 'Try again';
+
+  @override
+  String get premiumChooseAnotherPlan => 'Choose another plan';
+
+  @override
+  String get premiumClose => 'Close';
 }

@@ -236,5 +236,51 @@
   "replyPendingStatus": "በመጠባበቅ ላይ",
   "replyAcceptedStatus": "ተቀብሏል",
   "replyRejectedStatus": "ተከልክሏል",
-  "replyWithdrawnStatus": "ተሰርዟል"
+  "replyWithdrawnStatus": "ተሰርዟል",
+
+  "premiumUpgradeTitle": "እቅድዎን ያሻሽሉ",
+"premiumPickSubtitle": "ለልጥፍ ፍላጎትዎ የሚስማማውን እቅድ ይምረጡ።",
+"premiumSectionDaily": "ፈጣን ጭማሪ",
+"premiumSectionCredits": "የልጥፍ ጥቅሎች",
+"premiumSectionPro": "PRO አባልነት",
+"premiumMaybeLater": "ምናልባት በኋላ",
+"premiumFallbackBanner": "ነባሪ ዋጋዎች እየታዩ ነው — ለማደስ ይገናኙ።",
+
+"planDailyPass": "የቀን ማለፊያ",
+"planDailyPassDesc": "ዛሬ 10 ልጥፎች · እኩለ ሌሊት ያበቃል",
+"planCredit100": "100 ልጥፎች",
+"planCredit100Desc": "ጊዜው አያልቅም · በቀን 2 ብቻ",
+"planCredit500": "500 ልጥፎች",
+"planCredit500Desc": "ጊዜው አያልቅም · በቀን 2 ብቻ",
+"planCredit1000": "1000 ልጥፎች",
+"planCredit1000Desc": "ጊዜው አያልቅም · በቀን 2 ብቻ",
+"planMonthlyPro": "PRO · 30 ቀናት",
+"planMonthlyProDesc": "60 ልጥፎች · በቀን 2 ብቻ",
+"planYearlyPro": "PRO · 1 ዓመት",
+"planYearlyProDesc": "720 ልጥፎች · በቀን 2 ብቻ",
+
+"badgeSave20": "20% ቆጥብ",
+"badgeSave16": "16% ቆጥብ",
+"badgeBestValue": "ምርጥ ዋጋ",
+
+"premiumCompletePayment": "ክፍያዎን ያጠናቅቁ",
+"premiumUpdatesAutomatically": "ከተከፈለ በኋላ ይህ ገጽ በራሱ ይዘምናል።",
+"premiumScanWith": "በቴሌብር፣ CBE ወይም Chapa ይቃኙ",
+"premiumOpenCheckout": "የChapa ክፍያ ይክፈቱ",
+"premiumCopyLink": "የክፍያ አገናኝ ይቅዱ",
+"premiumLinkCopied": "የክፍያ አገናኝ ተቀድቷል",
+"premiumWaiting": "ክፍያ በመጠበቅ ላይ…",
+"premiumStep1": "በሌላ ስልክ ቴሌብር ወይም Chapa ይክፈቱ",
+"premiumStep2": "ከላይ ያለውን QR ይቃኙ ወይም ክፍያ ይክፈቱ የሚለውን ይንኩ",
+"premiumStep3": "ክፍያውን ያረጋግጡ — ይህ ገጽ በራሱ ይዘምናል",
+
+"premiumPaidTitle": "ክፍያ ተረጋግጧል!",
+"premiumPaidSubtitle": "አዲሱ እቅድዎ አሁን በመለያዎ ላይ ንቁ ነው።",
+
+"premiumFailedTitle": "ክፍያ አልተሳካም",
+"premiumExpiredTitle": "QR ጊዜው አልፏል",
+"premiumWindowExpired": "የክፍያ ጊዜው አልፏል።",
+"premiumTryAgain": "እንደገና ይሞክሩ",
+"premiumChooseAnotherPlan": "ሌላ እቅድ ይምረጡ",
+"premiumClose": "ዝጋ"
 }

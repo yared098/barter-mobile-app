@@ -1393,6 +1393,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'WITHDRAWN'**
   String get replyWithdrawnStatus;
+
+  /// No description provided for @premiumUpgradeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade your plan'**
+  String get premiumUpgradeTitle;
+
+  /// No description provided for @premiumPickSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the plan that fits your posting needs.'**
+  String get premiumPickSubtitle;
+
+  /// No description provided for @premiumSectionDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick top-up'**
+  String get premiumSectionDaily;
+
+  /// No description provided for @premiumSectionCredits.
+  ///
+  /// In en, this message translates to:
+  /// **'Post packs'**
+  String get premiumSectionCredits;
+
+  /// No description provided for @premiumSectionPro.
+  ///
+  /// In en, this message translates to:
+  /// **'PRO membership'**
+  String get premiumSectionPro;
+
+  /// No description provided for @premiumMaybeLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe later'**
+  String get premiumMaybeLater;
+
+  /// No description provided for @premiumFallbackBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing default prices — connect to refresh.'**
+  String get premiumFallbackBanner;
+
+  /// No description provided for @planDailyPass.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Pass'**
+  String get planDailyPass;
+
+  /// No description provided for @planDailyPassDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'10 posts today · expires at midnight'**
+  String get planDailyPassDesc;
+
+  /// No description provided for @planCredit100.
+  ///
+  /// In en, this message translates to:
+  /// **'100 Posts'**
+  String get planCredit100;
+
+  /// No description provided for @planCredit100Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'never expires · max 2/day'**
+  String get planCredit100Desc;
+
+  /// No description provided for @planCredit500.
+  ///
+  /// In en, this message translates to:
+  /// **'500 Posts'**
+  String get planCredit500;
+
+  /// No description provided for @planCredit500Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'never expires · max 2/day'**
+  String get planCredit500Desc;
+
+  /// No description provided for @planCredit1000.
+  ///
+  /// In en, this message translates to:
+  /// **'1000 Posts'**
+  String get planCredit1000;
+
+  /// No description provided for @planCredit1000Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'never expires · max 2/day'**
+  String get planCredit1000Desc;
+
+  /// No description provided for @planMonthlyPro.
+  ///
+  /// In en, this message translates to:
+  /// **'PRO · 30 days'**
+  String get planMonthlyPro;
+
+  /// No description provided for @planMonthlyProDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'60 posts · max 2/day'**
+  String get planMonthlyProDesc;
+
+  /// No description provided for @planYearlyPro.
+  ///
+  /// In en, this message translates to:
+  /// **'PRO · 1 year'**
+  String get planYearlyPro;
+
+  /// No description provided for @planYearlyProDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'720 posts · max 2/day'**
+  String get planYearlyProDesc;
+
+  /// No description provided for @badgeSave20.
+  ///
+  /// In en, this message translates to:
+  /// **'SAVE 20%'**
+  String get badgeSave20;
+
+  /// No description provided for @badgeSave16.
+  ///
+  /// In en, this message translates to:
+  /// **'SAVE 16%'**
+  String get badgeSave16;
+
+  /// No description provided for @badgeBestValue.
+  ///
+  /// In en, this message translates to:
+  /// **'BEST VALUE'**
+  String get badgeBestValue;
+
+  /// No description provided for @premiumCompletePayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your payment'**
+  String get premiumCompletePayment;
+
+  /// No description provided for @premiumUpdatesAutomatically.
+  ///
+  /// In en, this message translates to:
+  /// **'This screen updates automatically once paid.'**
+  String get premiumUpdatesAutomatically;
+
+  /// No description provided for @premiumScanWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan with Telebirr, CBE, or Chapa'**
+  String get premiumScanWith;
+
+  /// No description provided for @premiumOpenCheckout.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Chapa checkout'**
+  String get premiumOpenCheckout;
+
+  /// No description provided for @premiumCopyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy payment link'**
+  String get premiumCopyLink;
+
+  /// No description provided for @premiumLinkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment link copied'**
+  String get premiumLinkCopied;
+
+  /// No description provided for @premiumWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for payment…'**
+  String get premiumWaiting;
+
+  /// No description provided for @premiumStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Telebirr or Chapa on another phone'**
+  String get premiumStep1;
+
+  /// No description provided for @premiumStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan the QR above, or tap Open checkout'**
+  String get premiumStep2;
+
+  /// No description provided for @premiumStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm payment — this screen updates itself'**
+  String get premiumStep3;
+
+  /// No description provided for @premiumPaidTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment confirmed!'**
+  String get premiumPaidTitle;
+
+  /// No description provided for @premiumPaidSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan is now active on your account.'**
+  String get premiumPaidSubtitle;
+
+  /// No description provided for @premiumFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment failed'**
+  String get premiumFailedTitle;
+
+  /// No description provided for @premiumExpiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'QR expired'**
+  String get premiumExpiredTitle;
+
+  /// No description provided for @premiumWindowExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The payment window has expired.'**
+  String get premiumWindowExpired;
+
+  /// No description provided for @premiumTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get premiumTryAgain;
+
+  /// No description provided for @premiumChooseAnotherPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another plan'**
+  String get premiumChooseAnotherPlan;
+
+  /// No description provided for @premiumClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get premiumClose;
 }
 
 class _AppLocalizationsDelegate

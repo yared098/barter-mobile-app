@@ -718,4 +718,124 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get replyWithdrawnStatus => 'ተሰርዟል';
+
+  @override
+  String get premiumUpgradeTitle => 'እቅድዎን ያሻሽሉ';
+
+  @override
+  String get premiumPickSubtitle => 'ለልጥፍ ፍላጎትዎ የሚስማማውን እቅድ ይምረጡ።';
+
+  @override
+  String get premiumSectionDaily => 'ፈጣን ጭማሪ';
+
+  @override
+  String get premiumSectionCredits => 'የልጥፍ ጥቅሎች';
+
+  @override
+  String get premiumSectionPro => 'PRO አባልነት';
+
+  @override
+  String get premiumMaybeLater => 'ምናልባት በኋላ';
+
+  @override
+  String get premiumFallbackBanner => 'ነባሪ ዋጋዎች እየታዩ ነው — ለማደስ ይገናኙ።';
+
+  @override
+  String get planDailyPass => 'የቀን ማለፊያ';
+
+  @override
+  String get planDailyPassDesc => 'ዛሬ 10 ልጥፎች · እኩለ ሌሊት ያበቃል';
+
+  @override
+  String get planCredit100 => '100 ልጥፎች';
+
+  @override
+  String get planCredit100Desc => 'ጊዜው አያልቅም · በቀን 2 ብቻ';
+
+  @override
+  String get planCredit500 => '500 ልጥፎች';
+
+  @override
+  String get planCredit500Desc => 'ጊዜው አያልቅም · በቀን 2 ብቻ';
+
+  @override
+  String get planCredit1000 => '1000 ልጥፎች';
+
+  @override
+  String get planCredit1000Desc => 'ጊዜው አያልቅም · በቀን 2 ብቻ';
+
+  @override
+  String get planMonthlyPro => 'PRO · 30 ቀናት';
+
+  @override
+  String get planMonthlyProDesc => '60 ልጥፎች · በቀን 2 ብቻ';
+
+  @override
+  String get planYearlyPro => 'PRO · 1 ዓመት';
+
+  @override
+  String get planYearlyProDesc => '720 ልጥፎች · በቀን 2 ብቻ';
+
+  @override
+  String get badgeSave20 => '20% ቆጥብ';
+
+  @override
+  String get badgeSave16 => '16% ቆጥብ';
+
+  @override
+  String get badgeBestValue => 'ምርጥ ዋጋ';
+
+  @override
+  String get premiumCompletePayment => 'ክፍያዎን ያጠናቅቁ';
+
+  @override
+  String get premiumUpdatesAutomatically => 'ከተከፈለ በኋላ ይህ ገጽ በራሱ ይዘምናል።';
+
+  @override
+  String get premiumScanWith => 'በቴሌብር፣ CBE ወይም Chapa ይቃኙ';
+
+  @override
+  String get premiumOpenCheckout => 'የChapa ክፍያ ይክፈቱ';
+
+  @override
+  String get premiumCopyLink => 'የክፍያ አገናኝ ይቅዱ';
+
+  @override
+  String get premiumLinkCopied => 'የክፍያ አገናኝ ተቀድቷል';
+
+  @override
+  String get premiumWaiting => 'ክፍያ በመጠበቅ ላይ…';
+
+  @override
+  String get premiumStep1 => 'በሌላ ስልክ ቴሌብር ወይም Chapa ይክፈቱ';
+
+  @override
+  String get premiumStep2 => 'ከላይ ያለውን QR ይቃኙ ወይም ክፍያ ይክፈቱ የሚለውን ይንኩ';
+
+  @override
+  String get premiumStep3 => 'ክፍያውን ያረጋግጡ — ይህ ገጽ በራሱ ይዘምናል';
+
+  @override
+  String get premiumPaidTitle => 'ክፍያ ተረጋግጧል!';
+
+  @override
+  String get premiumPaidSubtitle => 'አዲሱ እቅድዎ አሁን በመለያዎ ላይ ንቁ ነው።';
+
+  @override
+  String get premiumFailedTitle => 'ክፍያ አልተሳካም';
+
+  @override
+  String get premiumExpiredTitle => 'QR ጊዜው አልፏል';
+
+  @override
+  String get premiumWindowExpired => 'የክፍያ ጊዜው አልፏል።';
+
+  @override
+  String get premiumTryAgain => 'እንደገና ይሞክሩ';
+
+  @override
+  String get premiumChooseAnotherPlan => 'ሌላ እቅድ ይምረጡ';
+
+  @override
+  String get premiumClose => 'ዝጋ';
 }
