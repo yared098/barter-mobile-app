@@ -66,7 +66,7 @@ class HomeScreen extends ConsumerWidget {
 //  MATCHES LIST  → now uses the unified MatchCard
 // ═══════════════════════════════════════════════════════
 
-class _MatchesList extends StatelessWidget {
+class _MatchesList extends ConsumerWidget {
   final Map<String, dynamic> data;
   final Future<void> Function() onRefresh;
 
@@ -88,14 +88,33 @@ class _MatchesList extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final t = AppLocalizations.of(context)!;
     final matches = (data['matches'] as List?) ?? [];
     final teasers = (data['teaserMatches'] as List?) ?? [];
     final total = data['totalCount'] ?? 0;
     final hidden = data['hiddenCount'] ?? 0;
-    final tier = (data['tier'] as String?) ?? 'FREE';
-    final isFree = tier == 'FREE';
+
+    // ═══════════════════════════════════════════════════════════════
+    // ⭐ THE FIX: read tier from authProvider (fresh) not data['tier']
+    //     (which may be stale if the backend cached the response)
+    // ═══════════════════════════════════════════════════════════════
+    final authUser = ref.watch(authProvider).user;
+    final dataTier = (data['tier'] as String?) ?? 'FREE';
+    final authTier = authUser?['tier'] as String?;
+    final effectiveTier = authTier ?? dataTier;
+
+    // ⭐ Use the shared hasPaidAccess() (checks expiry + credits too)
+    final hasAccess = hasPaidAccess(authUser);
+    final isFree = !hasAccess;
+
+    // ⭐ If backend says FREE but auth says paid → trigger a refetch
+    //   (backend probably cached old tier; next fetch should get fresh data)
+    if (authTier != null && authTier != 'FREE' && dataTier == 'FREE') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.invalidate(matchesProvider);
+      });
+    }
 
     if (matches.isEmpty) {
       return EmptyView(
@@ -118,7 +137,6 @@ class _MatchesList extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
         children: [
-          // Compact header (unchanged)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Row(
@@ -176,7 +194,6 @@ class _MatchesList extends StatelessWidget {
             ),
           ),
 
-          // ─── VISIBLE MATCHES ───
           ...matches.map((m) {
             final match = m as Map<String, dynamic>;
             final p = match['product'] as Map<String, dynamic>;
@@ -213,7 +230,7 @@ class _MatchesList extends StatelessWidget {
             );
           }),
 
-          // ─── TEASER SECTION ───
+          // ⭐ Now `isFree` reflects authProvider, not stale backend data
           if (isFree && teasers.isNotEmpty) ...[
             const SizedBox(height: 6),
             _TeaserSection(

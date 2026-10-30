@@ -13,6 +13,46 @@ import '../../widgets/upgrade_prompt_sheet.dart';
 import 'create_request_screen.dart';
 import 'request_detail_screen.dart';
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ⭐ SHARED HELPER — returns true for ANY paid tier:
+//    PRO (still valid), DAILY (still valid), or CREDIT (has remaining credits)
+// ═══════════════════════════════════════════════════════════════════════════
+bool hasPaidAccess(dynamic user) {
+  if (user == null) return false;
+  final tier = user['tier'] as String?;
+  final now = DateTime.now();
+
+  // PRO — check expiry
+  if (tier == 'PRO') {
+    final exp = user['proExpiresAt'];
+    if (exp == null) return true;
+    try {
+      return DateTime.parse(exp as String).isAfter(now);
+    } catch (_) {
+      return true;
+    }
+  }
+
+  // DAILY pass — check expiry
+  if (tier == 'DAILY') {
+    final exp = user['dailyPassExpiresAt'];
+    if (exp == null) return false;
+    try {
+      return DateTime.parse(exp as String).isAfter(now);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // CREDIT pack — check remaining credits
+  if (tier == 'CREDIT') {
+    final credits = (user['creditsRemaining'] as num?)?.toInt() ?? 0;
+    return credits > 0;
+  }
+
+  return false;
+}
+
 class WantedBoardScreen extends ConsumerStatefulWidget {
   const WantedBoardScreen({super.key});
 
@@ -46,26 +86,18 @@ class _WantedBoardScreenState extends ConsumerState<WantedBoardScreen>
     super.dispose();
   }
 
-  bool _isPro(dynamic user) {
-    if (user == null) return false;
-    final tier = user['tier'] as String?;
-    if (tier != 'PRO') return false;
-    final proExpiresAt = user['proExpiresAt'];
-    if (proExpiresAt == null) return true;
-    try {
-      return DateTime.parse(proExpiresAt as String).isAfter(DateTime.now());
-    } catch (_) {
-      return true;
-    }
-  }
+  // ⭐ REMOVED: the old `_isPro()` method
+  //   → replaced by the top-level `hasPaidAccess()` helper
 
   /// Opens create screen — but checks tier limit first.
   Future<void> _openCreate() async {
     final user = ref.read(authProvider).user;
-    final isPro = _isPro(user);
 
-    // FREE users: block if they already have 1 open request
-    if (!isPro) {
+    // ⭐ CHANGED: hasPaidAccess instead of _isPro
+    final paid = hasPaidAccess(user);
+
+    // Non-paid users: block if they already have 1 open request
+    if (!paid) {
       final mine = ref.read(wantedFeedProvider('mine')).asData?.value ?? [];
       final openCount = mine
           .whereType<Map<String, dynamic>>()
@@ -118,12 +150,14 @@ class _WantedBoardScreenState extends ConsumerState<WantedBoardScreen>
   }
 
   /// Tier-gated FAB:
-  ///   • PRO              → normal "Post request" (+ icon)
-  ///   • FREE with 0 open → normal "Post request" (+ icon)
-  ///   • FREE with 1 open → white "Go PRO" pill (crown icon)
+  ///   • Any paid tier (PRO/DAILY/CREDIT) → "Post request" (+ icon)
+  ///   • Non-paid with 0 open             → "Post request" (+ icon)
+  ///   • Non-paid with 1 open             → "Go PRO" pill
   Widget _buildPostFab(AppLocalizations t) {
     final user = ref.watch(authProvider).user;
-    final isPro = _isPro(user);
+
+    // ⭐ CHANGED: hasPaidAccess instead of _isPro
+    final paid = hasPaidAccess(user);
 
     // Count open requests only from "mine" feed (already cached)
     final mineAsync = ref.watch(wantedFeedProvider('mine'));
@@ -133,7 +167,7 @@ class _WantedBoardScreenState extends ConsumerState<WantedBoardScreen>
         .where((r) => r['status'] == 'OPEN')
         .length;
 
-    final canPost = isPro || openCount == 0;
+    final canPost = paid || openCount == 0;
 
     if (canPost) {
       return FloatingActionButton.extended(
@@ -151,7 +185,7 @@ class _WantedBoardScreenState extends ConsumerState<WantedBoardScreen>
       );
     }
 
-    // FREE at limit → "Go PRO" pill
+    // Non-paid at limit → "Go PRO" pill
     return FloatingActionButton.extended(
       backgroundColor: Colors.white,
       foregroundColor: AppColors.primary,
