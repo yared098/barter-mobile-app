@@ -280,6 +280,9 @@ class _FeedTab extends ConsumerWidget {
     final t = AppLocalizations.of(context)!;
     final async = ref.watch(wantedFeedProvider(scope));
 
+    // Current user — used to detect "your" cards in any tab
+    final currentUserId = ref.watch(authProvider).user?['id'] as String?;
+
     return async.when(
       skipLoadingOnRefresh: true,
       loading: () => LoadingView(message: t.loadingRequests),
@@ -290,14 +293,16 @@ class _FeedTab extends ConsumerWidget {
       data: (list) {
         if (list.isEmpty) {
           return EmptyView(
-            icon: Icons.assignment_outlined,
+            icon: scope == 'mine'
+                ? Icons.person_outline_rounded
+                : Icons.assignment_outlined,
             title: switch (scope) {
-              'mine' => t.noRequestsYet,
+              'mine' => 'No requests from you yet',
               'replies' => t.noRepliesYet,
               _ => t.nobodyAskingYet,
             },
             message: switch (scope) {
-              'mine' => t.tapPostRequestHint,
+              'mine' => 'Tap "Post request" below to ask for what you need.',
               'replies' => t.browseBoardHint,
               _ => t.boardQuietHint,
             },
@@ -313,17 +318,75 @@ class _FeedTab extends ConsumerWidget {
             itemCount: list.length,
             itemBuilder: (_, i) {
               final r = list[i] as Map<String, dynamic>;
-              return RequestCard(
-                request: r,
-                onTap: () async {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          RequestDetailScreen(requestId: r['id'] as String),
+
+              // ── Is this request from the current user? ──
+              //   1. scope == 'mine' → always yours
+              //   2. authorId matches → yours (works in Browse/Replies too)
+              final isYours = scope == 'mine' ||
+                  (currentUserId != null && r['authorId'] == currentUserId);
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    RequestCard(
+                      request: r,
+                      onTap: () async {
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => RequestDetailScreen(
+                              requestId: r['id'] as String,
+                            ),
+                          ),
+                        );
+                        ref.invalidate(wantedFeedProvider(scope));
+                      },
                     ),
-                  );
-                  ref.invalidate(wantedFeedProvider(scope));
-                },
+                    if (isYours)
+                      Positioned(
+                        top: 10,
+                        right: 10,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.person_rounded,
+                                size: 10,
+                                color: Colors.white,
+                              ),
+                              SizedBox(width: 3),
+                              Text(
+                                'YOURS',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               );
             },
           ),

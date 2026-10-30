@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';        // ⭐ ADDED
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-
+import 'chapa_webview_screen.dart';
 import 'package:barter_ethio/l10n/app_localizations.dart';
 import '../models/plan_option.dart';
+import '../providers/auth_provider.dart';                        // ⭐ ADDED
 import '../services/api_service.dart';
 import '../theme.dart';
 
@@ -20,17 +22,20 @@ Future<bool> showPremiumSheet(BuildContext context, {String? reason}) async {
   return r == true;
 }
 
-class PremiumCheckoutSheet extends StatefulWidget {
+// ⭐ CHANGED: StatefulWidget → ConsumerStatefulWidget
+class PremiumCheckoutSheet extends ConsumerStatefulWidget {
   final String? reason;
   const PremiumCheckoutSheet({super.key, this.reason});
 
   @override
-  State<PremiumCheckoutSheet> createState() => _PremiumCheckoutSheetState();
+  ConsumerState<PremiumCheckoutSheet> createState() =>
+      _PremiumCheckoutSheetState();
 }
 
 enum _State { pick, pending, paid, failed, expired }
 
-class _PremiumCheckoutSheetState extends State<PremiumCheckoutSheet> {
+// ⭐ CHANGED: State → ConsumerState
+class _PremiumCheckoutSheetState extends ConsumerState<PremiumCheckoutSheet> {
   final _api = ApiService();
 
   List<PlanOption>? _plans;
@@ -179,6 +184,16 @@ class _PremiumCheckoutSheetState extends State<PremiumCheckoutSheet> {
       if (status == 'paid') {
         _stopTimers();
         setState(() => _state = _State.paid);
+
+        // ⭐ THE FIX — refresh the current user from backend BEFORE
+        // closing the sheet. Updates tier / credits / expiry in the
+        // auth provider, so every screen rebuilds with the new tier.
+        try {
+          await ref.read(authProvider.notifier).refreshUser();
+        } catch (_) {
+          // Silent fail — next refresh (app resume / manual) will retry
+        }
+
         Future.delayed(const Duration(milliseconds: 1600), () {
           if (mounted && _state == _State.paid) {
             Navigator.of(context).pop(true);
@@ -218,12 +233,30 @@ class _PremiumCheckoutSheetState extends State<PremiumCheckoutSheet> {
 
   Future<void> _openCheckout() async {
     final url = _checkoutUrl;
-    if (url == null) return;
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (url == null || !mounted) return;
+
+    final completed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => ChapaWebViewScreen(
+          checkoutUrl: url,
+          title: _pendingPlan?.label ?? 'Complete payment',
+          subtitle: _pendingPlan != null
+              ? '${_pendingPlan!.price} ${_pendingPlan!.currency}'
+              : null,
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+
+    // WebView returned `true` → user reached return URL.
+    // Trigger an immediate status check so the sheet doesn't wait 3s.
+    if (completed == true) {
+      await _check();
     }
+    // If `false` or `null` → user cancelled. Polling keeps running
+    // (webhook might still mark paid if they used another phone).
   }
 
   Future<void> _copyLink() async {
